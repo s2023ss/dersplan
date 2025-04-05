@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Yanıtı</title>
+    <!-- Marked.js kütüphanesi -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- HTML2PDF kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .response-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .response-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .response-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .response-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .response-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .response-value {
+            color: #666;
+            margin-left: 10px;
+        }
+        /* Markdown içeriği için özel stiller */
+        .markdown-content {
+            line-height: 1.6;
+            color: #333;
+            font-size: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3,
+        .markdown-content h4 {
+            color: #2c5282;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        .markdown-content h1 { font-size: 2em; }
+        .markdown-content h2 { font-size: 1.5em; }
+        .markdown-content h3 { font-size: 1.25em; }
+        .markdown-content h4 { font-size: 1em; }
+        
+        .markdown-content ul, 
+        .markdown-content ol {
+            padding-left: 1.5em;
+            margin: 1em 0;
+        }
+        .markdown-content li {
+            margin: 0.5em 0;
+            line-height: 1.5;
+        }
+        .markdown-content li > p {
+            margin: 0;
+        }
+        .markdown-content strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+        .markdown-content em {
+            font-style: italic;
+        }
+        .markdown-content p {
+            margin: 1em 0;
+            line-height: 1.7;
+        }
+        .markdown-content code {
+            background: #f7fafc;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9em;
+            color: #1a202c;
+            border: 1px solid #edf2f7;
+        }
+        .markdown-content pre {
+            background: #f7fafc;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #edf2f7;
+        }
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+            border: none;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #4CAF50;
+            margin: 1.5em 0;
+            padding: 0.5em 1em;
+            color: #4a5568;
+            background: #f8f9fa;
+            font-style: italic;
+        }
+        .markdown-content blockquote p {
+            margin: 0.5em 0;
+        }
+        .markdown-content hr {
+            border: none;
+            border-top: 2px solid #e2e8f0;
+            margin: 2em 0;
+        }
+        .markdown-content a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1em auto;
+            border-radius: 4px;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+            text-align: right;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        .back-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background-color: #45a049;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .status-success {
+            background-color: #DFF2BF;
+            color: #4F8A10;
+        }
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .pdf-button {
+            display: inline-block;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .pdf-button:hover {
+            background-color: #1976D2;
+        }
+        @media print {
+            .button-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="content-to-pdf">
+        <div class="response-container">
+            <div class="response-header">
+                <h1>Form Yanıtı <span id="statusBadge" class="status-badge"></span></h1>
+            </div>
+            <div class="response-item">
+                <div class="response-label">Ad Soyad</div>
+                <div id="nameValue" class="response-value"></div>
+            </div>
+            <div class="response-item">
+                <div class="response-label">Sınıf</div>
+                <div id="classValue" class="response-value"></div>
+            </div>
+            <div class="response-item">
+                <div class="response-label">Fütüvvet Kavramı</div>
+                <div id="futuvvetValue" class="response-value"></div>
+            </div>
+            <div class="response-item">
+                <div class="response-label">E-posta</div>
+                <div id="emailValue" class="response-value"></div>
+            </div>
+            <div class="response-item">
+                <div class="response-label">Konu</div>
+                <div id="subjectValue" class="response-value"></div>
+            </div>
+            <div class="response-item">
+                <div class="response-label">Mesaj</div>
+                <div id="messageValue" class="response-value"></div>
+            </div>
+            <div id="timestamp" class="timestamp"></div>
+        </div>
+    </div>
+    <div class="button-container">
+        <a href="index.html" class="back-button">Forma Geri Dön</a>
+        <button onclick="downloadPDF()" class="pdf-button">PDF Olarak İndir</button>
+    </div>
+
+    <script>
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        async function downloadPDF() {
+            const element = document.getElementById('content-to-pdf');
+            const name = document.getElementById('nameValue').textContent;
+            const subject = document.getElementById('subjectValue').textContent;
+            const date = new Date().toLocaleDateString('tr-TR');
+            
+            // PDF oluşturma ayarları
+            const opt = {
+                margin: 10,
+                filename: `${name}-${subject}-${date}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: true,
+                    letterRendering: true,
+                    allowTaint: true,
+                    foreignObjectRendering: true,
+                    scrollY: -window.scrollY,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight,
+                    windowWidth: document.documentElement.clientWidth
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait',
+                    putOnlyUsedFonts: true,
+                    floatPrecision: 16
+                }
+            };
+
+            // PDF indirme butonu ve loading mesajı
+            const pdfButton = document.querySelector('.pdf-button');
+            const originalText = pdfButton.textContent;
+            pdfButton.textContent = 'PDF Hazırlanıyor...';
+            pdfButton.disabled = true;
+
+            try {
+                // Sayfanın en üstüne scroll yap
+                window.scrollTo(0, 0);
+                
+                // Tüm içeriğin yüklenmesini bekle
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Geçici stil değişiklikleri
+                const originalStyle = element.style.cssText;
+                element.style.width = '210mm'; // A4 genişliği
+                element.style.margin = '0';
+                element.style.padding = '10mm';
+                element.style.backgroundColor = 'white';
+                
+                // PDF oluştur
+                const pdf = await html2pdf().set(opt).from(element).save();
+                
+                // Stilleri geri yükle
+                element.style.cssText = originalStyle;
+
+            } catch (error) {
+                console.error('PDF oluşturulurken hata:', error);
+                alert('PDF oluşturulurken bir hata oluştu.');
+            } finally {
+                // Butonu eski haline getir
+                pdfButton.textContent = originalText;
+                pdfButton.disabled = false;
+            }
+        }
+
+        function getResponseFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const response = urlParams.get('response');
+            if (response) {
+                try {
+                    // Base64'ten decode et ve UTF-8 karakterleri çöz
+                    const decodedResponse = JSON.parse(decodeURIComponent(atob(response)));
+                    
+                    // Status badge
+                    const statusBadge = document.getElementById('statusBadge');
+                    if (decodedResponse.status === 'success') {
+                        statusBadge.textContent = '✓ Başarılı';
+                        statusBadge.className = 'status-badge status-success';
+                    }
+
+                    // Form verileri - formData nesnesinden oku
+                    const formData = decodedResponse.formData || {};
+                    document.getElementById('nameValue').textContent = formData.name || 'Belirtilmemiş';
+                    document.getElementById('classValue').textContent = formData.class ? `${formData.class}. Sınıf` : 'Belirtilmemiş';
+                    document.getElementById('futuvvetValue').textContent = formData.futuvvet || 'Belirtilmemiş';
+                    document.getElementById('emailValue').textContent = formData.email || 'Belirtilmemiş';
+                    document.getElementById('subjectValue').textContent = formData.subject || 'Belirtilmemiş';
+                    document.getElementById('messageValue').textContent = formData.message || 'Belirtilmemiş';
+
+                    // Webhook yanıtını göster
+                    if (decodedResponse.output) {
+                        const webhookOutput = document.createElement('div');
+                        webhookOutput.className = 'response-item';
+                        
+                        // Markdown içeriğini HTML'e çevir
+                        const markdownContent = document.createElement('div');
+                        markdownContent.className = 'markdown-content';
+                        
+                        // Marked.js ayarları
+                        marked.setOptions({
+                            gfm: true, // GitHub Flavored Markdown
+                            breaks: true, // Satır sonlarını <br> olarak çevir
+                            headerIds: true, // Başlıklara ID ekle
+                            mangle: false, // Başlık ID'lerini değiştirme
+                            sanitize: false, // HTML etiketlerine izin ver
+                            smartLists: true, // Akıllı liste oluşturma
+                            smartypants: true, // Akıllı noktalama
+                            xhtml: true, // XHTML uyumlu çıktı
+                            langPrefix: 'language-', // Kod bloğu dil öneki
+                            pedantic: false, // Markdown kurallarını sıkı uygulama
+                            silent: false // Hata ayıklama için
+                        });
+
+                        try {
+                            // Markdown'ı HTML'e çevir
+                            const htmlContent = marked.parse(decodedResponse.output);
+                            
+                            webhookOutput.innerHTML = `
+                                <div class="response-label">N8N Yanıtı</div>
+                                <div class="markdown-content">${htmlContent}</div>
+                            `;
+                            
+                            // Yanıtı timestamp'ten önce ekle
+                            document.querySelector('.response-container').insertBefore(
+                                webhookOutput,
+                                document.getElementById('timestamp')
+                            );
+                        } catch (error) {
+                            console.error('Markdown dönüştürme hatası:', error);
+                            webhookOutput.innerHTML = `
+                                <div class="response-label">N8N Yanıtı</div>
+                                <div class="response-value">${decodedResponse.output}</div>
+                            `;
+                            document.querySelector('.response-container').insertBefore(
+                                webhookOutput,
+                                document.getElementById('timestamp')
+                            );
+                        }
+                    }
+
+                    // Zaman damgası
+                    const timestamp = decodedResponse.timestamp;
+                    document.getElementById('timestamp').textContent = 
+                        'Gönderim Zamanı: ' + formatDate(timestamp);
+
+                } catch (error) {
+                    console.error('Yanıt işlenirken hata oluştu:', error);
+                    document.body.innerHTML = '<div class="response-container">' +
+                        '<div class="response-header"><h1>Hata</h1></div>' +
+                        '<div class="response-item">Yanıt formatı geçersiz: ' + error.message + '</div>' +
+                        '</div>' +
+                        '<div class="button-container">' +
+                        '<a href="index.html" class="back-button">Forma Geri Dön</a>' +
+                        '</div>';
+                }
+            } else {
+                document.body.innerHTML = '<div class="response-container">' +
+                    '<div class="response-header"><h1>Hata</h1></div>' +
+                    '<div class="response-item">Henüz bir yanıt alınmadı.</div>' +
+                    '</div>' +
+                    '<div class="button-container">' +
+                    '<a href="index.html" class="back-button">Forma Geri Dön</a>' +
+                    '</div>';
+            }
+        }
+
+        window.addEventListener('load', getResponseFromURL);
+    </script>
+</body>
+</html> 

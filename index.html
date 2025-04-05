@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N8N Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .success-message {
+            color: green;
+            display: none;
+        }
+        .error-message {
+            color: red;
+            display: none;
+        }
+        .response-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            display: none;
+        }
+        .response-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .response-content {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        .nav-link {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .nav-link:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 10px;
+            color: #666;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="response.html" class="nav-link">Son Yanıtı Görüntüle</a>
+    </div>
+    <h1>İletişim Formu</h1>
+    <form id="n8nForm">
+        <div class="form-group">
+            <label for="name">Ad Soyad:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="class">Sınıf:</label>
+            <select id="class" name="class" required>
+                <option value="">Sınıf Seçiniz</option>
+                <option value="1">1. Sınıf</option>
+                <option value="2">2. Sınıf</option>
+                <option value="3">3. Sınıf</option>
+                <option value="4">4. Sınıf</option>
+                <option value="5">5. Sınıf</option>
+                <option value="6">6. Sınıf</option>
+                <option value="7">7. Sınıf</option>
+                <option value="8">8. Sınıf</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="futuvvet">Fütüvvet Kavramı:</label>
+            <select id="futuvvet" name="futuvvet" required>
+                <option value="">Fütüvvet Kavramı Seçiniz</option>
+                <option value="cömertlik">Cömertlik (Sehâvet)</option>
+                <option value="tevazu">Tevazu (Alçakgönüllülük)</option>
+                <option value="vefa">Vefa (Sözünde Durma)</option>
+                <option value="dogruluk">Doğruluk (Sıdk)</option>
+                <option value="fedakarlik">Fedakarlık (Îsâr)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="email">E-posta:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="subject">Konu:</label>
+            <input type="text" id="subject" name="subject" required>
+        </div>
+        <div class="form-group">
+            <label for="message">Mesaj:</label>
+            <textarea id="message" name="message" rows="4" required></textarea>
+        </div>
+        <button type="submit" id="submitButton">Gönder</button>
+    </form>
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Form gönderiliyor ve yanıt bekleniyor...</div>
+    </div>
+    <p id="successMessage" class="success-message">Form başarıyla gönderildi!</p>
+    <p id="errorMessage" class="error-message">Bir hata oluştu. Lütfen tekrar deneyin.</p>
+    
+    <div id="responseSection" class="response-section">
+        <div class="response-title">N8N Workflow Yanıtı:</div>
+        <div id="responseContent" class="response-content"></div>
+    </div>
+
+    <script>
+        document.getElementById('n8nForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Form ve loading durumlarını ayarla
+            const form = this;
+            const submitButton = document.getElementById('submitButton');
+            const loadingElement = document.getElementById('loading');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Form gönderimini başlat
+            submitButton.disabled = true;
+            loadingElement.style.display = 'block';
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Form verilerini al
+            const formData = {
+                name: form.name.value,
+                class: form.class.value,
+                futuvvet: form.futuvvet.value,
+                email: form.email.value,
+                subject: form.subject.value,
+                message: form.message.value
+            };
+
+            const webhookUrl = 'https://proegitim.app.n8n.cloud/webhook/webhook-1';
+
+            try {
+                // İlk webhook çağrısı
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // Webhook yanıtını bekle ve JSON olarak al
+                const webhookResponse = await response.text();
+                
+                // Form başarıyla gönderildi
+                loadingElement.style.display = 'none';
+                successMessage.style.display = 'block';
+                
+                // Yanıt nesnesini oluştur
+                const responseData = {
+                    status: 'success',
+                    formData: formData,
+                    timestamp: new Date().toISOString(),
+                    output: webhookResponse // Ham yanıtı direkt olarak ekle
+                };
+                
+                // Türkçe karakterler için önce JSON'u UTF-8'e dönüştür
+                const jsonString = JSON.stringify(responseData);
+                const base64Response = btoa(encodeURIComponent(jsonString));
+                
+                // Yanıt sayfasına yönlendir
+                window.location.href = `response.html?response=${base64Response}`;
+
+            } catch (error) {
+                loadingElement.style.display = 'none';
+                errorMessage.style.display = 'block';
+                submitButton.disabled = false;
+                console.error('Hata detayı:', error);
+                errorMessage.textContent = 'Bağlantı hatası oluştu. Lütfen tekrar deneyin.';
+            }
+        });
+    </script>
+</body>
+</html> 
