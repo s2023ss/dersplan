@@ -219,18 +219,6 @@
                 <div class="response-label">Fütüvvet Kavramı</div>
                 <div id="futuvvetValue" class="response-value"></div>
             </div>
-            <div class="response-item">
-                <div class="response-label">E-posta</div>
-                <div id="emailValue" class="response-value"></div>
-            </div>
-            <div class="response-item">
-                <div class="response-label">Konu</div>
-                <div id="subjectValue" class="response-value"></div>
-            </div>
-            <div class="response-item">
-                <div class="response-label">Mesaj</div>
-                <div id="messageValue" class="response-value"></div>
-            </div>
             <div id="timestamp" class="timestamp"></div>
         </div>
     </div>
@@ -255,13 +243,12 @@
         async function downloadPDF() {
             const element = document.getElementById('content-to-pdf');
             const name = document.getElementById('nameValue').textContent;
-            const subject = document.getElementById('subjectValue').textContent;
             const date = new Date().toLocaleDateString('tr-TR');
             
             // PDF oluşturma ayarları
             const opt = {
                 margin: 10,
-                filename: `${name}-${subject}-${date}.pdf`,
+                filename: `${name}-${date}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2,
@@ -339,9 +326,6 @@
                     document.getElementById('nameValue').textContent = formData.name || 'Belirtilmemiş';
                     document.getElementById('classValue').textContent = formData.class ? `${formData.class}. Sınıf` : 'Belirtilmemiş';
                     document.getElementById('futuvvetValue').textContent = formData.futuvvet || 'Belirtilmemiş';
-                    document.getElementById('emailValue').textContent = formData.email || 'Belirtilmemiş';
-                    document.getElementById('subjectValue').textContent = formData.subject || 'Belirtilmemiş';
-                    document.getElementById('messageValue').textContent = formData.message || 'Belirtilmemiş';
 
                     // Webhook yanıtını göster
                     if (decodedResponse.output) {
@@ -368,7 +352,7 @@
                         markdownContent.innerHTML = marked.parse(decodedResponse.output);
                         
                         webhookOutput.innerHTML = `
-                            <div class="response-label">N8N Yanıtı</div>
+                            <div class="response-label">Ders Planı</div>
                         `;
                         webhookOutput.appendChild(markdownContent);
                         
