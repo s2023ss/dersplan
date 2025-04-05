@@ -321,12 +321,11 @@
         }
 
         function getResponseFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const response = urlParams.get('response');
-            if (response) {
-                try {
-                    // Base64'ten decode et ve UTF-8 karakterleri çöz
-                    const decodedResponse = JSON.parse(decodeURIComponent(atob(response)));
+            try {
+                // localStorage'dan yanıtı al
+                const responseData = localStorage.getItem('formResponse');
+                if (responseData) {
+                    const decodedResponse = JSON.parse(responseData);
                     
                     // Status badge
                     const statusBadge = document.getElementById('statusBadge');
@@ -355,44 +354,29 @@
                         
                         // Marked.js ayarları
                         marked.setOptions({
-                            gfm: true, // GitHub Flavored Markdown
-                            breaks: true, // Satır sonlarını <br> olarak çevir
-                            headerIds: true, // Başlıklara ID ekle
-                            mangle: false, // Başlık ID'lerini değiştirme
-                            sanitize: false, // HTML etiketlerine izin ver
-                            smartLists: true, // Akıllı liste oluşturma
-                            smartypants: true, // Akıllı noktalama
-                            xhtml: true, // XHTML uyumlu çıktı
-                            langPrefix: 'language-', // Kod bloğu dil öneki
-                            pedantic: false, // Markdown kurallarını sıkı uygulama
-                            silent: false // Hata ayıklama için
+                            gfm: true,
+                            breaks: true,
+                            headerIds: true,
+                            mangle: false,
+                            sanitize: false,
+                            smartLists: true,
+                            smartypants: true,
+                            xhtml: true
                         });
-
-                        try {
-                            // Markdown'ı HTML'e çevir
-                            const htmlContent = marked.parse(decodedResponse.output);
-                            
-                            webhookOutput.innerHTML = `
-                                <div class="response-label">N8N Yanıtı</div>
-                                <div class="markdown-content">${htmlContent}</div>
-                            `;
-                            
-                            // Yanıtı timestamp'ten önce ekle
-                            document.querySelector('.response-container').insertBefore(
-                                webhookOutput,
-                                document.getElementById('timestamp')
-                            );
-                        } catch (error) {
-                            console.error('Markdown dönüştürme hatası:', error);
-                            webhookOutput.innerHTML = `
-                                <div class="response-label">N8N Yanıtı</div>
-                                <div class="response-value">${decodedResponse.output}</div>
-                            `;
-                            document.querySelector('.response-container').insertBefore(
-                                webhookOutput,
-                                document.getElementById('timestamp')
-                            );
-                        }
+                        
+                        // Markdown'ı HTML'e çevir
+                        markdownContent.innerHTML = marked.parse(decodedResponse.output);
+                        
+                        webhookOutput.innerHTML = `
+                            <div class="response-label">N8N Yanıtı</div>
+                        `;
+                        webhookOutput.appendChild(markdownContent);
+                        
+                        // Yanıtı timestamp'ten önce ekle
+                        document.querySelector('.response-container').insertBefore(
+                            webhookOutput,
+                            document.getElementById('timestamp')
+                        );
                     }
 
                     // Zaman damgası
@@ -400,20 +384,23 @@
                     document.getElementById('timestamp').textContent = 
                         'Gönderim Zamanı: ' + formatDate(timestamp);
 
-                } catch (error) {
-                    console.error('Yanıt işlenirken hata oluştu:', error);
+                    // localStorage'ı temizle
+                    localStorage.removeItem('formResponse');
+
+                } else {
                     document.body.innerHTML = '<div class="response-container">' +
                         '<div class="response-header"><h1>Hata</h1></div>' +
-                        '<div class="response-item">Yanıt formatı geçersiz: ' + error.message + '</div>' +
+                        '<div class="response-item">Henüz bir yanıt alınmadı.</div>' +
                         '</div>' +
                         '<div class="button-container">' +
                         '<a href="index.html" class="back-button">Forma Geri Dön</a>' +
                         '</div>';
                 }
-            } else {
+            } catch (error) {
+                console.error('Yanıt işlenirken hata oluştu:', error);
                 document.body.innerHTML = '<div class="response-container">' +
                     '<div class="response-header"><h1>Hata</h1></div>' +
-                    '<div class="response-item">Henüz bir yanıt alınmadı.</div>' +
+                    '<div class="response-item">Yanıt formatı geçersiz: ' + error.message + '</div>' +
                     '</div>' +
                     '<div class="button-container">' +
                     '<a href="index.html" class="back-button">Forma Geri Dön</a>' +

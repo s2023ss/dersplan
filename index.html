@@ -216,15 +216,14 @@
                     status: 'success',
                     formData: formData,
                     timestamp: new Date().toISOString(),
-                    output: webhookResponse // Ham yanıtı direkt olarak ekle
+                    output: webhookResponse
                 };
                 
-                // Türkçe karakterler için önce JSON'u UTF-8'e dönüştür
-                const jsonString = JSON.stringify(responseData);
-                const base64Response = btoa(encodeURIComponent(jsonString));
+                // Yanıtı localStorage'a kaydet
+                localStorage.setItem('formResponse', JSON.stringify(responseData));
                 
                 // Yanıt sayfasına yönlendir
-                window.location.href = `response.html?response=${base64Response}`;
+                window.location.href = 'response.html';
 
             } catch (error) {
                 loadingElement.style.display = 'none';
