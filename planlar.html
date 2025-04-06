@@ -448,10 +448,17 @@
                 
                 // Eğer içerik kısaltıldıysa "devamını oku" linki ekle
                 if (plainText.length > truncatedText.length) {
+                    // JavaScript string escape fonksiyonu
+                    const escapedContent = dersContent
+                        .replace(/\\/g, '\\\\')
+                        .replace(/'/g, "\\'")
+                        .replace(/"/g, '\\"')
+                        .replace(/\n/g, '\\n');
+
                     return `
                         <div class="ders-content">
                             ${truncatedHtml}
-                            <a href="#" class="read-more" onclick="event.stopPropagation(); showFullContent('${planId}', ${JSON.stringify(dersContent)}, '${title}')">
+                            <a href="#" class="read-more" onclick="event.stopPropagation(); showFullContent('${planId}', '${escapedContent}', '${title}'); return false;">
                                 Devamını oku
                             </a>
                         </div>
@@ -465,16 +472,26 @@
             }
         }
 
-        // Modal fonksiyonları
+        // Tam içeriği göster
         function showFullContent(planId, content, title) {
-            const modal = document.getElementById('fullContentModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const fullContent = document.getElementById('fullContent');
+            try {
+                const modal = document.getElementById('fullContentModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const fullContent = document.getElementById('fullContent');
 
-            modalTitle.textContent = title || 'Ders Planı';
-            fullContent.innerHTML = marked.parse(content);
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
+                // Başlığı ayarla
+                modalTitle.textContent = title || 'Ders Planı';
+
+                // Markdown içeriğini HTML'e çevir
+                fullContent.innerHTML = marked.parse(content);
+
+                // Modalı göster
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            } catch (error) {
+                console.error('Modal açılırken hata:', error);
+                alert('İçerik görüntülenirken bir hata oluştu.');
+            }
         }
 
         function closeFullContent() {
@@ -518,6 +535,9 @@
                     const formData = plan.form_data || {};
                     const name = formData.name || 'İsimsiz Plan';
 
+                    // Ders içeriğini güvenli bir şekilde al
+                    const dersContent = plan.ders || '';
+
                     card.innerHTML = `
                         <div class="plan-header">
                             <div class="plan-title">${name}</div>
@@ -528,10 +548,10 @@
                                 <div class="field-label">Form Verileri:</div>
                                 <pre>${formatJSON(plan.form_data)}</pre>
                             </div>
-                            ${plan.ders ? `
+                            ${dersContent ? `
                                 <div class="plan-field">
                                     <div class="field-label">Ders Planı:</div>
-                                    ${formatDersContent(plan.ders, plan.id, name)}
+                                    ${formatDersContent(dersContent, plan.id, name)}
                                 </div>
                             ` : ''}
                         </div>
