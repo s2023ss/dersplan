@@ -655,18 +655,57 @@
             };
         }
 
-        // Kart oluşturma fonksiyonunu güncelle
+        // Kayıtları yükle
+        async function loadRecords() {
+            try {
+                const { data, error } = await supabase
+                    .from('ders_planlari')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const recordsContainer = document.getElementById('records');
+                recordsContainer.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    recordsContainer.innerHTML = '<p class="loading">Henüz kayıt bulunmuyor.</p>';
+                    return;
+                }
+
+                data.forEach(record => {
+                    try {
+                        const card = createCard(record);
+                        recordsContainer.appendChild(card);
+                    } catch (cardError) {
+                        console.error('Kart oluşturma hatası:', cardError);
+                    }
+                });
+
+            } catch (error) {
+                console.error('Hata:', error);
+                document.getElementById('error').textContent = `Hata: ${error.message}`;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Kart oluşturma fonksiyonu
         function createCard(record) {
             const card = document.createElement('div');
             card.className = 'record-card';
             
+            // Form verilerini güvenli bir şekilde al
             const formData = record.form_data || {};
             const name = formData.name || 'İsim belirtilmemiş';
             const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
             const curriculum = formData.curriculum || 'Belirtilmemiş';
             const futuvvet = formData.futuvvet || 'Belirtilmemiş';
-            
-            const markdownContent = getMarkdownContent(record);
+
+            // Webhook yanıtını al
+            const webhookResponse = record.webhook_response || {};
+            const markdownContent = webhookResponse.markdown_content || 'İçerik bulunamadı';
             const previewText = markdownContent.length > 200 
                 ? markdownContent.substring(0, 200) + '...'
                 : markdownContent;
@@ -702,7 +741,7 @@
                 </div>
             `;
 
-            // Event listener'ları ayrı ayrı ekle
+            // Event listener'ları ekle
             const editButton = card.querySelector('.edit-button');
             const deleteButton = card.querySelector('.delete-button');
 
@@ -713,42 +752,6 @@
             card.addEventListener('click', () => openModal(record));
 
             return card;
-        }
-
-        // loadRecords fonksiyonunu güncelle
-        async function loadRecords() {
-            try {
-                const { data, error } = await supabase
-                    .from('ders_planlari')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                const recordsContainer = document.getElementById('records');
-                recordsContainer.innerHTML = '';
-
-                if (!data || data.length === 0) {
-                    recordsContainer.innerHTML = '<p class="loading">Henüz kayıt bulunmuyor.</p>';
-                    return;
-                }
-
-                data.forEach(record => {
-                    try {
-                        const card = createCard(record);
-                        recordsContainer.appendChild(card);
-                    } catch (cardError) {
-                        console.error('Kart oluşturma hatası:', cardError);
-                    }
-                });
-
-            } catch (error) {
-                console.error('Hata:', error);
-                document.getElementById('error').textContent = `Hata: ${error.message}`;
-                document.getElementById('error').style.display = 'block';
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
         }
 
         // Modal dışına tıklandığında kapat
