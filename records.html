@@ -285,6 +285,119 @@
                 width: auto;
             }
         }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .edit-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .edit-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .delete-button {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .delete-button:hover {
+            background-color: #dc2626;
+        }
+
+        /* Düzenleme modalı için ek stiller */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background-color: white;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background-color: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .modal-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-button-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .modal-button-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .modal-button-secondary {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-button-secondary:hover {
+            background-color: var(--border-color);
+        }
     </style>
 </head>
 <body>
@@ -306,6 +419,46 @@
                 <button class="close-button" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Düzenleme Modalı -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Kaydı Düzenle</h2>
+                <button class="close-button" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label class="form-label" for="editName">Ad Soyad</label>
+                        <input type="text" id="editName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editClass">Sınıf</label>
+                        <select id="editClass" class="form-select" required>
+                            <option value="9">9. Sınıf</option>
+                            <option value="10">10. Sınıf</option>
+                            <option value="11">11. Sınıf</option>
+                            <option value="12">12. Sınıf</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editFutuvvet">Fütüvvet Kavramı</label>
+                        <select id="editFutuvvet" class="form-select" required>
+                            <option value="Adalet">Adalet</option>
+                            <option value="Hikmet">Hikmet</option>
+                            <option value="İffet">İffet</option>
+                            <option value="Şecaat">Şecaat</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button modal-button-secondary" onclick="closeEditModal()">İptal</button>
+                <button class="modal-button modal-button-primary" onclick="saveEdit()">Kaydet</button>
+            </div>
         </div>
     </div>
 
@@ -424,7 +577,132 @@
             }
         });
 
-        // Kayıtları yükle
+        // Düzenleme ve silme için global değişkenler
+        let currentEditId = null;
+
+        // Düzenleme modalını aç
+        function openEditModal(record) {
+            event.stopPropagation(); // Kartın tıklama olayını engelle
+            currentEditId = record.id;
+            const formData = record.form_data || {};
+            
+            document.getElementById('editName').value = formData.name || '';
+            document.getElementById('editClass').value = formData.class || '9';
+            document.getElementById('editFutuvvet').value = formData.futuvvet || 'Adalet';
+            
+            document.getElementById('editModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Düzenleme modalını kapat
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            document.body.style.overflow = '';
+            currentEditId = null;
+        }
+
+        // Düzenlemeyi kaydet
+        async function saveEdit() {
+            if (!currentEditId) return;
+
+            const formData = {
+                name: document.getElementById('editName').value,
+                class: document.getElementById('editClass').value,
+                futuvvet: document.getElementById('editFutuvvet').value
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('ders_planlari')
+                    .update({ form_data: formData })
+                    .eq('id', currentEditId);
+
+                if (error) throw error;
+
+                closeEditModal();
+                loadRecords(); // Kayıtları yeniden yükle
+            } catch (error) {
+                console.error('Düzenleme hatası:', error);
+                alert('Düzenleme sırasında bir hata oluştu: ' + error.message);
+            }
+        }
+
+        // Kaydı sil
+        async function deleteRecord(id) {
+            event.stopPropagation(); // Kartın tıklama olayını engelle
+            
+            if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('ders_planlari')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                loadRecords(); // Kayıtları yeniden yükle
+            } catch (error) {
+                console.error('Silme hatası:', error);
+                alert('Silme sırasında bir hata oluştu: ' + error.message);
+            }
+        }
+
+        // Kart oluşturma fonksiyonunu güncelle
+        function createCard(record) {
+            const card = document.createElement('div');
+            card.className = 'record-card';
+            
+            const formData = record.form_data || {};
+            const name = formData.name || 'İsim belirtilmemiş';
+            const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
+            const futuvvet = formData.futuvvet || 'Belirtilmemiş';
+            
+            const markdownContent = getMarkdownContent(record);
+            const previewText = markdownContent.length > 200 
+                ? markdownContent.substring(0, 200) + '...'
+                : markdownContent;
+
+            card.innerHTML = `
+                <div class="record-header">
+                    <h2 class="record-title">${name}</h2>
+                </div>
+                <div class="record-content">
+                    <div class="record-field">
+                        <div class="field-label">Sınıf</div>
+                        <div class="field-value">${className}</div>
+                    </div>
+                    <div class="record-field">
+                        <div class="field-label">Fütüvvet Kavramı</div>
+                        <div class="field-value">${futuvvet}</div>
+                    </div>
+                    <div class="record-field">
+                        <div class="field-label">Ders Planı</div>
+                        <div class="markdown-preview">${marked.parse(previewText)}</div>
+                    </div>
+                </div>
+                <div class="record-footer">
+                    ${formatDate(record.created_at)}
+                </div>
+                <div class="card-actions">
+                    <button class="action-button edit-button" onclick="openEditModal(${JSON.stringify(record)})">
+                        Düzenle
+                    </button>
+                    <button class="action-button delete-button" onclick="deleteRecord(${record.id})">
+                        Sil
+                    </button>
+                </div>
+            `;
+
+            // Karta tıklama olayı ekle
+            card.addEventListener('click', () => openModal(record));
+
+            return card;
+        }
+
+        // loadRecords fonksiyonunu güncelle
         async function loadRecords() {
             try {
                 const { data, error } = await supabase
@@ -444,47 +722,7 @@
 
                 data.forEach(record => {
                     try {
-                        const card = document.createElement('div');
-                        card.className = 'record-card';
-                        
-                        // Form verilerini güvenli bir şekilde al
-                        const formData = record.form_data || {};
-                        const name = formData.name || 'İsim belirtilmemiş';
-                        const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
-                        const futuvvet = formData.futuvvet || 'Belirtilmemiş';
-                        
-                        // Markdown içeriğini al
-                        const markdownContent = getMarkdownContent(record);
-                        const previewText = markdownContent.length > 200 
-                            ? markdownContent.substring(0, 200) + '...'
-                            : markdownContent;
-
-                        card.innerHTML = `
-                            <div class="record-header">
-                                <h2 class="record-title">${name}</h2>
-                            </div>
-                            <div class="record-content">
-                                <div class="record-field">
-                                    <div class="field-label">Sınıf</div>
-                                    <div class="field-value">${className}</div>
-                                </div>
-                                <div class="record-field">
-                                    <div class="field-label">Fütüvvet Kavramı</div>
-                                    <div class="field-value">${futuvvet}</div>
-                                </div>
-                                <div class="record-field">
-                                    <div class="field-label">Ders Planı</div>
-                                    <div class="markdown-preview">${marked.parse(previewText)}</div>
-                                </div>
-                            </div>
-                            <div class="record-footer">
-                                ${formatDate(record.created_at)}
-                            </div>
-                        `;
-
-                        // Karta tıklama olayı ekle
-                        card.addEventListener('click', () => openModal(record));
-
+                        const card = createCard(record);
                         recordsContainer.appendChild(card);
                     } catch (cardError) {
                         console.error('Kart oluşturma hatası:', cardError);
