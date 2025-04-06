@@ -404,7 +404,7 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA'
         );
 
-        // Tarih formatla
+        // Yardımcı fonksiyonlar
         function formatDate(isoString) {
             return new Date(isoString).toLocaleString('tr-TR', {
                 day: '2-digit',
@@ -415,12 +415,11 @@
             });
         }
 
-        // JSON formatla
         function formatJSON(obj) {
             return JSON.stringify(obj, null, 2);
         }
 
-        // İlk 200 kelimeyi al ve "devamını oku" linki ekle
+        // İlk 200 kelimeyi al
         function truncateText(text, wordLimit = 200) {
             const words = text.split(/\s+/);
             if (words.length <= wordLimit) return text;
@@ -428,43 +427,61 @@
             return words.slice(0, wordLimit).join(' ') + '...';
         }
 
-        // Tam içeriği göster
+        // Markdown'ı HTML'e çevir ve kısalt
+        function formatDersContent(dersContent, planId, title) {
+            if (!dersContent) return '';
+
+            try {
+                // Markdown'ı HTML'e çevir
+                const htmlContent = marked.parse(dersContent);
+                
+                // HTML etiketlerini kaldır ve metni al
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                const plainText = tempDiv.textContent || tempDiv.innerText;
+                
+                // İlk 200 kelimeyi al
+                const truncatedText = truncateText(plainText);
+                
+                // Kısaltılmış içeriği markdown'a çevir ve HTML olarak göster
+                const truncatedHtml = marked.parse(truncatedText);
+                
+                // Eğer içerik kısaltıldıysa "devamını oku" linki ekle
+                if (plainText.length > truncatedText.length) {
+                    return `
+                        <div class="ders-content">
+                            ${truncatedHtml}
+                            <a href="#" class="read-more" onclick="event.stopPropagation(); showFullContent('${planId}', ${JSON.stringify(dersContent)}, '${title}')">
+                                Devamını oku
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                return `<div class="ders-content">${truncatedHtml}</div>`;
+            } catch (error) {
+                console.error('Ders içeriği formatlanırken hata:', error);
+                return '<div class="error">İçerik formatlanamadı</div>';
+            }
+        }
+
+        // Modal fonksiyonları
         function showFullContent(planId, content, title) {
             const modal = document.getElementById('fullContentModal');
             const modalTitle = document.getElementById('modalTitle');
             const fullContent = document.getElementById('fullContent');
 
-            // Başlığı ayarla
             modalTitle.textContent = title || 'Ders Planı';
-
-            // Markdown içeriğini HTML'e çevir
             fullContent.innerHTML = marked.parse(content);
-
-            // Modalı göster
             modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Arka plan kaydırmayı engelle
+            document.body.style.overflow = 'hidden';
         }
 
-        // Modalı kapat
         function closeFullContent() {
             const modal = document.getElementById('fullContentModal');
             modal.style.display = 'none';
-            document.body.style.overflow = ''; // Arka plan kaydırmayı geri aç
+            document.body.style.overflow = '';
         }
-
-        // Modal dışına tıklandığında kapat
-        document.getElementById('fullContentModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFullContent();
-            }
-        });
-
-        // ESC tuşuna basıldığında modalı kapat
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeFullContent();
-            }
-        });
 
         // Planları yükle
         async function loadPlans() {
@@ -532,8 +549,20 @@
             }
         }
 
-        // Planları yükle
+        // Event Listeners
         document.addEventListener('DOMContentLoaded', loadPlans);
+
+        document.getElementById('fullContentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFullContent();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeFullContent();
+            }
+        });
     </script>
 </body>
 </html> 
