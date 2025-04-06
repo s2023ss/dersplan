@@ -438,19 +438,32 @@
                     <div class="form-group">
                         <label class="form-label" for="editClass">Sınıf</label>
                         <select id="editClass" class="form-select" required>
-                            <option value="9">9. Sınıf</option>
-                            <option value="10">10. Sınıf</option>
-                            <option value="11">11. Sınıf</option>
-                            <option value="12">12. Sınıf</option>
+                            <option value="1">1. Sınıf</option>
+                            <option value="2">2. Sınıf</option>
+                            <option value="3">3. Sınıf</option>
+                            <option value="4">4. Sınıf</option>
+                            <option value="5">5. Sınıf</option>
+                            <option value="6">6. Sınıf</option>
+                            <option value="7">7. Sınıf</option>
+                            <option value="8">8. Sınıf</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editCurriculum">Müfredat</label>
+                        <select id="editCurriculum" class="form-select" required>
+                            <option value="meb">MEB Müfredatı</option>
+                            <option value="ihh">İHH Müfredatı</option>
+                            <option value="diyanet">Diyanet Müfredatı</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="editFutuvvet">Fütüvvet Kavramı</label>
                         <select id="editFutuvvet" class="form-select" required>
-                            <option value="Adalet">Adalet</option>
-                            <option value="Hikmet">Hikmet</option>
-                            <option value="İffet">İffet</option>
-                            <option value="Şecaat">Şecaat</option>
+                            <option value="cömertlik">Cömertlik (Sehâvet)</option>
+                            <option value="tevazu">Tevazu (Alçakgönüllülük)</option>
+                            <option value="vefa">Vefa (Sözünde Durma)</option>
+                            <option value="dogruluk">Doğruluk (Sıdk)</option>
+                            <option value="fedakarlik">Fedakarlık (Îsâr)</option>
                         </select>
                     </div>
                 </form>
@@ -503,6 +516,16 @@
             }
         }
 
+        // Müfredat adını getir
+        function getMufredatName(curriculum) {
+            const mufredatMap = {
+                'meb': 'MEB Müfredatı',
+                'ihh': 'İHH Müfredatı',
+                'diyanet': 'Diyanet Müfredatı'
+            };
+            return mufredatMap[curriculum] || 'Belirtilmemiş';
+        }
+
         // Modal fonksiyonları
         function openModal(record) {
             const modal = document.getElementById('recordModal');
@@ -530,6 +553,10 @@
                         <div class="record-field">
                             <div class="field-label">Sınıf</div>
                             <div class="field-value">${className}</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="field-label">Müfredat</div>
+                            <div class="field-value">${getMufredatName(formData.curriculum)}</div>
                         </div>
                         <div class="record-field">
                             <div class="field-label">Fütüvvet Kavramı</div>
@@ -574,6 +601,7 @@
                 
                 document.getElementById('editName').value = formData.name || '';
                 document.getElementById('editClass').value = formData.class || '9';
+                document.getElementById('editCurriculum').value = formData.curriculum || 'meb';
                 document.getElementById('editFutuvvet').value = formData.futuvvet || 'Adalet';
                 
                 document.getElementById('editModal').style.display = 'block';
@@ -595,6 +623,7 @@
             const formData = {
                 name: document.getElementById('editName').value,
                 class: document.getElementById('editClass').value,
+                curriculum: document.getElementById('editCurriculum').value,
                 futuvvet: document.getElementById('editFutuvvet').value
             };
 
@@ -663,6 +692,10 @@
                     <div class="record-field">
                         <div class="field-label">Sınıf</div>
                         <div class="field-value">${className}</div>
+                    </div>
+                    <div class="record-field">
+                        <div class="field-label">Müfredat</div>
+                        <div class="field-value">${getMufredatName(formData.curriculum)}</div>
                     </div>
                     <div class="record-field">
                         <div class="field-label">Fütüvvet Kavramı</div>

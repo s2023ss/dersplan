@@ -213,6 +213,15 @@
                 </select>
             </div>
             <div class="form-group">
+                <label for="curriculum">Müfredat</label>
+                <select id="curriculum" name="curriculum" required>
+                    <option value="">Müfredat Seçiniz</option>
+                    <option value="meb">1. Sınıf Matematik Müfredatı</option>
+                    <option value="ihh">2. Sınıf Türkçe</option>
+                    <option value="diyanet">3. Sınıf Tarih</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="futuvvet">Fütüvvet Kavramı</label>
                 <select id="futuvvet" name="futuvvet" required>
                     <option value="">Fütüvvet Kavramı Seçiniz</option>
@@ -253,6 +262,7 @@
             const formData = {
                 name: document.getElementById('name').value,
                 class: document.getElementById('class').value,
+                curriculum: document.getElementById('curriculum').value,
                 futuvvet: document.getElementById('futuvvet').value
             };
 
