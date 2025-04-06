@@ -278,15 +278,24 @@
                     throw new Error('Webhook yanıt vermedi');
                 }
 
-                const webhookData = await webhookResponse.json();
-                console.log('Webhook yanıtı:', webhookData);
+                const webhookData = await webhookResponse.text();
+                console.log('Webhook ham yanıtı:', webhookData);
+
+                // Webhook yanıtını JSON formatına dönüştür
+                const responseObject = {
+                    status: 'success',
+                    timestamp: new Date().toISOString(),
+                    markdown_content: webhookData
+                };
+
+                console.log('İşlenmiş webhook yanıtı:', responseObject);
 
                 // Supabase'e kaydet
                 const { data: insertData, error: insertError } = await supabaseClient
                     .from('ders_planlari')
                     .insert({
                         form_data: formData,
-                        webhook_response: webhookData,
+                        webhook_response: responseObject,
                         created_at: new Date().toISOString()
                     });
 
@@ -301,7 +310,7 @@
                 
                 // 3 saniye bekle ve yanıt sayfasına yönlendir
                 setTimeout(() => {
-                    const encodedResponse = btoa(JSON.stringify(webhookData));
+                    const encodedResponse = btoa(JSON.stringify(responseObject));
                     window.location.href = `response.html?response=${encodedResponse}`;
                 }, 3000);
 
