@@ -26,6 +26,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+            font-family: 'Inter', sans-serif;
         }
 
         .container {
@@ -37,9 +38,7 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        /* Mobil için nav-links düzenlemesi */
         .nav-links {
-            position: static;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -48,12 +47,9 @@
 
         @media (min-width: 640px) {
             .nav-links {
-                position: absolute;
-                top: 1rem;
-                right: 1rem;
                 flex-direction: row;
                 gap: 1rem;
-                margin-bottom: 0;
+                justify-content: flex-end;
             }
 
             body {
@@ -73,14 +69,12 @@
             font-weight: 500;
             transition: background-color 0.2s;
             text-align: center;
-            width: 100%;
         }
 
         .nav-link:hover {
             background-color: var(--primary-dark);
         }
 
-        /* Form stilleri */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -141,253 +135,71 @@
             color: var(--text-color);
         }
 
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 2rem 0;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 3px solid var(--border-color);
-            border-top: 3px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            margin-top: 1rem;
-            color: var(--text-light);
-            font-size: 0.875rem;
-        }
-
-        .success-message, .error-message {
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            font-weight: 500;
-            display: none;
-        }
-
-        .success-message {
-            background-color: #ecfdf5;
-            color: var(--success-color);
-            border: 1px solid #d1fae5;
-        }
-
-        .error-message {
-            background-color: #fef2f2;
-            color: var(--error-color);
-            border: 1px solid #fee2e2;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 640px) {
-            body {
-                padding: 1rem;
-            }
-            
-            .container {
-                padding: 1.5rem;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-            }
-            .nav-links {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .nav-link {
-                justify-content: center;
-            }
-        }
-
-        .processing-popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-
-        .processing-content {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .processing-content h3 {
-            color: var(--text-color);
-            margin: 0 0 0.5rem 0;
-            font-size: 1.25rem;
-        }
-
-        .processing-content p {
-            color: var(--text-light);
-            margin: 0 0 1.5rem 0;
-            font-size: 0.875rem;
-        }
-
-        .progress-bars {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-
-        .bar {
-            width: 20px;
-            height: 40px;
-            background-color: #E5E7EB;
-            border-radius: 4px;
-        }
-
-        .bar.active {
-            background-color: #3B82F6;
-            transition: background-color 0.3s ease;
-        }
-
-        @keyframes progressAnimation {
-            0% {
-                background-color: #E5E7EB;
-            }
-            50% {
-                background-color: #3B82F6;
-            }
-            100% {
-                background-color: #E5E7EB;
-            }
-        }
-
-        /* Mobil için düzenlemeler */
-        @media (max-width: 640px) {
-            .processing-content {
-                padding: 1.5rem;
-            }
-
-            .bar {
-                width: 16px;
-                height: 32px;
-            }
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .progress-bars {
-            display: flex;
-            gap: 5px;
-            margin-top: 1rem;
-        }
-
-        .bar {
-            width: 20px;
-            height: 20px;
-            background: #ddd;
-            border-radius: 3px;
-            transition: background-color 0.3s;
-        }
-
-        .bar.active {
-            background: #007bff;
-        }
-
-        #successMessage {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 4px;
-        }
-
-        .alert-link {
-            color: #0056b3;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .alert-link:hover {
-            text-decoration: underline;
-        }
-
-        #resultArea {
-            transition: all 0.3s ease;
-        }
-
         #loadingIndicator {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
             z-index: 1000;
+        }
+
+        #resultArea {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-color);
         }
 
         .btn-primary {
             display: inline-block;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s;
         }
 
-        .alert {
-            border-radius: 4px;
-            padding: 1rem;
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+            }
+            
+            .nav-link {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="nav-links">
-                        <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
+            <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
         </div>
         <h1>Ders Planı</h1>
         <form id="n8nForm">
             <div class="form-group">
-                <label for="name">Ad Soyad</label>
-                <input type="text" id="name" name="name" required placeholder="Adınız ve soyadınız">
-            </div>
-            <div class="form-group">
-                <label for="class">Sınıf</label>
-                <select id="class" name="class" required>
+                <label for="sinif">Sınıf</label>
+                <select id="sinif" name="sinif" required>
                     <option value="">Sınıf Seçiniz</option>
                     <option value="1">1. Sınıf</option>
                     <option value="2">2. Sınıf</option>
@@ -400,28 +212,17 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="curriculum">Müfredat Konusu</label>
-                <input type="text" id="curriculum" name="curriculum" required placeholder="Müfredat konusunu giriniz">
+                <label for="mufredat">Müfredat Konusu</label>
+                <input type="text" id="mufredat" name="mufredat" required placeholder="Müfredat konusunu giriniz">
             </div>
             <div class="form-group">
-                <label for="futuvvet">Fütüvvet Kavramı</label>
-                <select id="futuvvet" name="futuvvet" required>
-                    <option value="">Fütüvvet Kavramı Seçiniz</option>
-                    <option value="cömertlik">Cömertlik (Sehâvet)</option>
-                    <option value="tevazu">Tevazu (Alçakgönüllülük)</option>
-                    <option value="vefa">Vefa (Sözünde Durma)</option>
-                    <option value="dogruluk">Doğruluk (Sıdk)</option>
-                    <option value="fedakarlik">Fedakarlık (Îsâr)</option>
-                </select>
+                <label for="ders">Ders</label>
+                <input type="text" id="ders" name="ders" required placeholder="Ders adını giriniz">
             </div>
-            <button type="submit" id="submitButton">Gönder</button>
+            <button type="submit">Ders Planı Oluştur</button>
         </form>
-        <div id="loadingDiv" style="display: none;" class="text-center mt-3">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Yükleniyor...</span>
-            </div>
-        </div>
-        <div id="resultArea" style="display: none;" class="mt-4">
+
+        <div id="resultArea" style="display: none;">
             <div class="alert alert-success">
                 <p>Form başarıyla gönderildi!</p>
                 <div id="linkContainer">
@@ -429,35 +230,13 @@
                 </div>
             </div>
         </div>
-        <p id="errorMessage" class="error-message">Bir hata oluştu. Lütfen tekrar deneyin.</p>
-    </div>
 
-    <!-- Processing Popup -->
-    <div id="processingPopup" class="modal-overlay" style="display: none;">
-        <div class="modal-content text-center">
-            <h4>Ders Planı Hazırlanması devam ediyor</h4>
-            <p>Sayfayı Kapatmayın</p>
-            <div class="progress-bars">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
+        <div id="loadingIndicator" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">İşleniyor...</span>
             </div>
+            <p class="mt-2">Ders Planı Hazırlanıyor...</p>
         </div>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" style="display: none;" class="text-center mt-3">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">İşleniyor...</span>
-        </div>
-        <p class="mt-2">Ders Planı Hazırlanıyor...</p>
     </div>
 
     <script>
@@ -521,7 +300,7 @@
                         // Create view link
                         const link = document.createElement('a');
                         link.href = `detay.html?id=${records[0].id}`;
-                        link.className = 'btn btn-primary mt-2';
+                        link.className = 'btn-primary';
                         link.textContent = 'Son Kaydı Görüntüle';
                         
                         // Clear and update link container
