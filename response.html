@@ -7,8 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Marked.js kütüphanesi -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- HTML2PDF kütüphanesi -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -70,6 +68,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             overflow: hidden;
+            margin-bottom: 2rem;
         }
 
         .response-header {
@@ -87,25 +86,41 @@
             gap: 0.5rem;
         }
 
-        .response-item {
+        .response-content {
             padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
         }
 
-        .response-item:last-child {
-            border-bottom: none;
-        }
-
-        .response-label {
-            font-weight: 500;
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .response-value {
+        .markdown-content {
+            line-height: 1.7;
             color: var(--text-color);
-            font-size: 1rem;
+        }
+
+        .markdown-content h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .markdown-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-color);
+        }
+
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.5rem;
         }
 
         .timestamp {
@@ -114,20 +129,7 @@
             text-align: right;
             padding: 1rem 1.5rem;
             background-color: var(--bg-color);
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .status-success {
-            background-color: #ecfdf5;
-            color: var(--success-color);
+            border-top: 1px solid var(--border-color);
         }
 
         .button-container {
@@ -136,7 +138,7 @@
             margin-top: 2rem;
         }
 
-        .pdf-button {
+        .print-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -149,98 +151,30 @@
             font-size: 0.875rem;
             font-weight: 500;
             transition: all 0.2s ease;
-            text-decoration: none;
         }
 
-        .pdf-button:hover {
+        .print-button:hover {
             background-color: var(--primary-hover);
             transform: translateY(-1px);
         }
 
-        /* Markdown içeriği için özel stiller */
-        .markdown-content {
-            line-height: 1.7;
-            color: var(--text-color);
-            font-size: 1rem;
-        }
-
-        .markdown-content h1,
-        .markdown-content h2,
-        .markdown-content h3,
-        .markdown-content h4 {
-            color: var(--text-color);
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
-            font-weight: 600;
-            line-height: 1.25;
-        }
-
-        .markdown-content h1 { font-size: 1.5em; }
-        .markdown-content h2 { font-size: 1.25em; }
-        .markdown-content h3 { font-size: 1.125em; }
-        .markdown-content h4 { font-size: 1em; }
-
-        .markdown-content ul,
-        .markdown-content ol {
-            padding-left: 1.5em;
-            margin: 1em 0;
-        }
-
-        .markdown-content li {
-            margin: 0.5em 0;
-        }
-
-        .markdown-content p {
-            margin: 1em 0;
-        }
-
-        .markdown-content code {
-            background-color: var(--bg-color);
-            padding: 0.2em 0.4em;
-            border-radius: 4px;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-            font-size: 0.875em;
-        }
-
-        .markdown-content pre {
-            background-color: var(--bg-color);
-            padding: 1em;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 1em 0;
-        }
-
-        .markdown-content blockquote {
-            border-left: 4px solid var(--primary-color);
-            margin: 1.5em 0;
-            padding: 0.5em 1em;
-            color: var(--text-light);
-            background-color: var(--bg-color);
-            font-style: italic;
-        }
-
-        .markdown-content a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-
-        .markdown-content a:hover {
-            text-decoration: underline;
-        }
-
         @media print {
-            .button-container,
-            .nav-menu {
-                display: none;
-            }
-
             body {
                 padding: 0;
                 background-color: white;
             }
 
+            .container {
+                max-width: none;
+            }
+
+            .nav-menu, .button-container {
+                display: none;
+            }
+
             .response-container {
                 box-shadow: none;
+                margin: 0;
             }
         }
 
@@ -253,10 +187,9 @@
                 flex-direction: column;
             }
 
-            .pdf-button,
-            .back-button {
+            .back-button, .print-button {
                 width: 100%;
-                text-align: center;
+                justify-content: center;
             }
         }
     </style>
@@ -266,135 +199,55 @@
         <div class="nav-menu">
             <a href="index.html" class="back-button">Ana Sayfaya Dön</a>
         </div>
-        <div id="content-to-pdf">
-            <div class="response-container">
-                <div class="response-header">
-                    <h1>Ders Planı Yanıtı <span id="statusBadge" class="status-badge"></span></h1>
-                </div>
-                <div class="response-item">
-                    <div class="response-label">Ad Soyad</div>
-                    <div id="nameValue" class="response-value"></div>
-                </div>
-                <div class="response-item">
-                    <div class="response-label">Sınıf</div>
-                    <div id="classValue" class="response-value"></div>
-                </div>
-                <div class="response-item">
-                    <div class="response-label">Fütüvvet Kavramı</div>
-                    <div id="futuvvetValue" class="response-value"></div>
-                </div>
-                <div id="timestamp" class="timestamp"></div>
+        <div class="response-container">
+            <div class="response-header">
+                <h1>Ders Planı Yanıtı</h1>
             </div>
+            <div class="response-content">
+                <div id="markdownContent" class="markdown-content"></div>
+            </div>
+            <div id="timestamp" class="timestamp"></div>
         </div>
         <div class="button-container">
             <a href="index.html" class="back-button">Ana Sayfaya Dön</a>
-            <button onclick="window.print()" class="pdf-button">Yazdır</button>
+            <button onclick="window.print()" class="print-button">Yazdır</button>
         </div>
     </div>
 
     <script>
-        function formatDate(isoString) {
-            const date = new Date(isoString);
-            return date.toLocaleString('tr-TR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-        }
-
-        async function downloadPDF() {
-            window.print();
-        }
-
-        function getResponseFromURL() {
+        // URL'den yanıtı al ve göster
+        window.addEventListener('DOMContentLoaded', function() {
             try {
-                // localStorage'dan yanıtı al
-                const responseData = localStorage.getItem('formResponse');
-                if (responseData) {
-                    const decodedResponse = JSON.parse(responseData);
-                    
-                    // Status badge
-                    const statusBadge = document.getElementById('statusBadge');
-                    if (decodedResponse.status === 'success') {
-                        statusBadge.textContent = '✓ Başarılı';
-                        statusBadge.className = 'status-badge status-success';
-                    }
-
-                    // Form verileri - formData nesnesinden oku
-                    const formData = decodedResponse.formData || {};
-                    document.getElementById('nameValue').textContent = formData.name || 'Belirtilmemiş';
-                    document.getElementById('classValue').textContent = formData.class ? `${formData.class}. Sınıf` : 'Belirtilmemiş';
-                    document.getElementById('futuvvetValue').textContent = formData.futuvvet || 'Belirtilmemiş';
-
-                    // Webhook yanıtını göster
-                    if (decodedResponse.output) {
-                        const webhookOutput = document.createElement('div');
-                        webhookOutput.className = 'response-item';
-                        
-                        // Markdown içeriğini HTML'e çevir
-                        const markdownContent = document.createElement('div');
-                        markdownContent.className = 'markdown-content';
-                        
-                        // Marked.js ayarları
-                        marked.setOptions({
-                            gfm: true,
-                            breaks: true,
-                            headerIds: true,
-                            mangle: false,
-                            sanitize: false,
-                            smartLists: true,
-                            smartypants: true,
-                            xhtml: true
-                        });
-                        
-                        // Markdown'ı HTML'e çevir
-                        markdownContent.innerHTML = marked.parse(decodedResponse.output);
-                        
-                        webhookOutput.innerHTML = `
-                            <div class="response-label">Ders Planı</div>
-                        `;
-                        webhookOutput.appendChild(markdownContent);
-                        
-                        // Yanıtı timestamp'ten önce ekle
-                        document.querySelector('.response-container').insertBefore(
-                            webhookOutput,
-                            document.getElementById('timestamp')
-                        );
-                    }
-
-                    // Zaman damgası
-                    const timestamp = decodedResponse.timestamp;
-                    document.getElementById('timestamp').textContent = 
-                        'Gönderim Zamanı: ' + formatDate(timestamp);
-
-                    // localStorage'ı temizle
-                    localStorage.removeItem('formResponse');
-
-                } else {
-                    document.body.innerHTML = '<div class="response-container">' +
-                        '<div class="response-header"><h1>Hata</h1></div>' +
-                        '<div class="response-item">Henüz bir yanıt alınmadı.</div>' +
-                        '</div>' +
-                        '<div class="button-container">' +
-                        '<a href="index.html" class="back-button">Ana Sayfaya Dön</a>' +
-                        '</div>';
+                // URL'den yanıt parametresini al
+                const urlParams = new URLSearchParams(window.location.search);
+                const encodedResponse = urlParams.get('response');
+                
+                if (!encodedResponse) {
+                    throw new Error('Yanıt bulunamadı');
                 }
-            } catch (error) {
-                console.error('Yanıt işlenirken hata oluştu:', error);
-                document.body.innerHTML = '<div class="response-container">' +
-                    '<div class="response-header"><h1>Hata</h1></div>' +
-                    '<div class="response-item">Yanıt formatı geçersiz: ' + error.message + '</div>' +
-                    '</div>' +
-                    '<div class="button-container">' +
-                    '<a href="index.html" class="back-button">Ana Sayfaya Dön</a>' +
-                    '</div>';
-            }
-        }
 
-        window.addEventListener('load', getResponseFromURL);
+                // Base64'ten çöz ve JSON'a dönüştür
+                const responseData = JSON.parse(atob(encodedResponse));
+                console.log('Yanıt verisi:', responseData);
+
+                // Markdown içeriğini işle ve göster
+                const markdownContent = document.getElementById('markdownContent');
+                markdownContent.innerHTML = marked.parse(responseData.markdown_content);
+
+                // Zaman damgasını göster
+                const timestamp = document.getElementById('timestamp');
+                const date = new Date(responseData.timestamp);
+                timestamp.textContent = `Oluşturulma Tarihi: ${date.toLocaleString('tr-TR')}`;
+
+            } catch (error) {
+                console.error('Hata:', error);
+                document.querySelector('.response-content').innerHTML = `
+                    <div style="color: var(--error-color); padding: 1rem;">
+                        Yanıt gösterilirken bir hata oluştu: ${error.message}
+                    </div>
+                `;
+            }
+        });
     </script>
 </body>
 </html> 
