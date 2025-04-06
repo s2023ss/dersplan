@@ -7,8 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Marked.js -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -47,12 +45,17 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            font-size: 1.875rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-color);
+            margin: 0;
         }
 
         .nav-button {
@@ -62,7 +65,7 @@
             color: white;
             padding: 0.75rem 1.25rem;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 0.875rem;
             font-weight: 500;
             transition: all 0.2s ease;
@@ -70,73 +73,49 @@
 
         .nav-button:hover {
             background-color: var(--primary-hover);
-            transform: translateY(-1px);
         }
 
-        .records-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .record-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        .records-table {
+            width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .record-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px -5px rgba(0, 0, 0, 0.1);
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .record-header {
-            background-color: var(--primary-color);
-            color: white;
+        th, td {
             padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .record-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .record-content {
-            padding: 1rem;
-        }
-
-        .record-field {
-            margin-bottom: 1rem;
-        }
-
-        .field-label {
-            font-size: 0.875rem;
+        th {
+            background-color: var(--bg-color);
             font-weight: 500;
             color: var(--text-light);
-            margin-bottom: 0.25rem;
-        }
-
-        .field-value {
-            color: var(--text-color);
-        }
-
-        .record-footer {
-            padding: 1rem;
-            background-color: var(--bg-color);
-            border-top: 1px solid var(--border-color);
             font-size: 0.875rem;
-            color: var(--text-light);
+        }
+
+        td {
+            font-size: 0.875rem;
+        }
+
+        tr:hover {
+            background-color: var(--bg-color);
         }
 
         .loading {
             text-align: center;
             padding: 2rem;
             color: var(--text-light);
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .error {
@@ -145,173 +124,22 @@
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
+            border: 1px solid #fee2e2;
         }
 
-        .markdown-preview {
-            max-height: 200px;
-            overflow-y: auto;
-            background-color: var(--bg-color);
-            padding: 0.75rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-        }
-
-        /* Modal stilleri */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .modal-content {
-            position: relative;
-            background-color: var(--card-bg);
-            margin: 2rem auto;
-            padding: 0;
-            width: 90%;
-            max-width: 800px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1.5rem;
-            position: relative;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .close-button {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            line-height: 1;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-
-        .close-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .detail-section {
-            margin-bottom: 2rem;
-        }
-
-        .detail-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        .detail-content {
-            background-color: var(--bg-color);
-            padding: 1rem;
-            border-radius: 8px;
-        }
-
-        .markdown-content {
-            line-height: 1.7;
-        }
-
-        .markdown-content h1 {
-            font-size: 1.5rem;
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .markdown-content h2 {
-            font-size: 1.25rem;
-            margin-top: 1.25rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .markdown-content p {
-            margin-bottom: 1rem;
-        }
-
-        .markdown-content ul, .markdown-content ol {
-            margin-bottom: 1rem;
-            padding-left: 1.5rem;
-        }
-
-        .markdown-content li {
-            margin-bottom: 0.5rem;
-        }
-
-        @media (max-width: 640px) {
-            body {
-                padding: 1rem;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .records-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                margin: 1rem;
-                width: auto;
-            }
-        }
-
-        .card-actions {
+        .action-buttons {
             display: flex;
             gap: 0.5rem;
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
-            background-color: var(--bg-color);
         }
 
         .action-button {
-            flex: 1;
             padding: 0.5rem 1rem;
             border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-        }
-
-        .edit-button {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .edit-button:hover {
-            background-color: var(--primary-hover);
         }
 
         .delete-button {
@@ -323,80 +151,46 @@
             background-color: #dc2626;
         }
 
-        /* Düzenleme modalı için ek stiller */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
             font-weight: 500;
-            color: var(--text-color);
         }
 
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.875rem;
+        .status-success {
+            background-color: #ecfdf5;
+            color: var(--success-color);
         }
 
-        .form-select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.875rem;
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
             background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.875rem;
-            min-height: 150px;
-            resize: vertical;
-        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0;
+            }
 
-        .modal-footer {
-            padding: 1rem 1.5rem;
-            background-color: var(--bg-color);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
 
-        .modal-button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+            .records-table {
+                overflow-x: auto;
+            }
 
-        .modal-button-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .modal-button-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .modal-button-secondary {
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .modal-button-secondary:hover {
-            background-color: var(--border-color);
+            th, td {
+                padding: 0.75rem;
+            }
         }
     </style>
 </head>
@@ -406,68 +200,26 @@
             <h1>Ders Planı Kayıtları</h1>
             <a href="index.html" class="nav-button">Ana Sayfaya Dön</a>
         </div>
+
         <div id="error" class="error" style="display: none;"></div>
         <div id="loading" class="loading">Kayıtlar yükleniyor...</div>
-        <div id="records" class="records-grid"></div>
-    </div>
 
-    <!-- Modal -->
-    <div id="recordModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle"></h2>
-                <button class="close-button" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
-        </div>
-    </div>
-
-    <!-- Düzenleme Modalı -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Kaydı Düzenle</h2>
-                <button class="close-button" onclick="closeEditModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm">
-                    <div class="form-group">
-                        <label class="form-label" for="editName">Ad Soyad</label>
-                        <input type="text" id="editName" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="editClass">Sınıf</label>
-                        <select id="editClass" class="form-select" required>
-                            <option value="1">1. Sınıf</option>
-                            <option value="2">2. Sınıf</option>
-                            <option value="3">3. Sınıf</option>
-                            <option value="4">4. Sınıf</option>
-                            <option value="5">5. Sınıf</option>
-                            <option value="6">6. Sınıf</option>
-                            <option value="7">7. Sınıf</option>
-                            <option value="8">8. Sınıf</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="editCurriculum">Müfredat</label>
-                        <input type="text" id="editCurriculum" class="form-input" required placeholder="Müfredat konusunu giriniz">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="editFutuvvet">Fütüvvet Kavramı</label>
-                        <select id="editFutuvvet" class="form-select" required>
-                            <option value="cömertlik">Cömertlik (Sehâvet)</option>
-                            <option value="tevazu">Tevazu (Alçakgönüllülük)</option>
-                            <option value="vefa">Vefa (Sözünde Durma)</option>
-                            <option value="dogruluk">Doğruluk (Sıdk)</option>
-                            <option value="fedakarlik">Fedakarlık (Îsâr)</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-button modal-button-secondary" onclick="closeEditModal()">İptal</button>
-                <button class="modal-button modal-button-primary" onclick="saveEdit()">Kaydet</button>
-            </div>
+        <div class="records-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th>Sınıf</th>
+                        <th>Müfredat</th>
+                        <th>Fütüvvet Kavramı</th>
+                        <th>Tarih</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsList">
+                    <!-- Kayıtlar buraya JavaScript ile eklenecek -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -489,290 +241,86 @@
             });
         }
 
-        // Güvenli bir şekilde webhook yanıtından markdown içeriğini al
-        function getMarkdownContent(record) {
-            try {
-                // webhook_response bir string olabilir
-                const response = typeof record.webhook_response === 'string' 
-                    ? JSON.parse(record.webhook_response) 
-                    : record.webhook_response;
-
-                // Farklı olası yapıları kontrol et
-                if (response.markdown_content) {
-                    return response.markdown_content;
-                } else if (typeof response === 'string') {
-                    return response;
-                } else {
-                    console.log('Webhook yanıtı:', response);
-                    return 'İçerik formatı desteklenmiyor';
-                }
-            } catch (error) {
-                console.error('Markdown içeriği alınamadı:', error);
-                return 'İçerik işlenemedi';
+        // Kayıt sil
+        async function deleteRecord(id) {
+            if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                return;
             }
-        }
-
-        // Modal fonksiyonları
-        function openModal(record) {
-            const modal = document.getElementById('recordModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalBody = document.getElementById('modalBody');
-
-            // Form verilerini güvenli bir şekilde al
-            const formData = record.form_data || {};
-            const name = formData.name || 'İsim belirtilmemiş';
-            const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
-            const curriculum = formData.curriculum || 'Belirtilmemiş';
-            const futuvvet = formData.futuvvet || 'Belirtilmemiş';
-            
-            // Markdown içeriğini al
-            const markdownContent = getMarkdownContent(record);
-
-            // Modal içeriğini oluştur
-            modalBody.innerHTML = `
-                <div class="detail-section">
-                    <h3 class="detail-title">Öğrenci Bilgileri</h3>
-                    <div class="detail-content">
-                        <div class="record-field">
-                            <div class="field-label">Ad Soyad</div>
-                            <div class="field-value">${name}</div>
-                        </div>
-                        <div class="record-field">
-                            <div class="field-label">Sınıf</div>
-                            <div class="field-value">${className}</div>
-                        </div>
-                        <div class="record-field">
-                            <div class="field-label">Müfredat</div>
-                            <div class="field-value">${curriculum}</div>
-                        </div>
-                        <div class="record-field">
-                            <div class="field-label">Fütüvvet Kavramı</div>
-                            <div class="field-value">${futuvvet}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="detail-section">
-                    <h3 class="detail-title">Ders Planı</h3>
-                    <div class="detail-content markdown-content">
-                        ${marked.parse(markdownContent)}
-                    </div>
-                </div>
-                <div class="detail-section">
-                    <h3 class="detail-title">Oluşturulma Bilgisi</h3>
-                    <div class="detail-content">
-                        ${formatDate(record.created_at)}
-                    </div>
-                </div>
-            `;
-
-            modalTitle.textContent = name;
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Arka planı kaydırmayı engelle
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('recordModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = ''; // Arka plan kaydırmayı geri aç
-        }
-
-        // Düzenleme ve silme için global değişkenler
-        let currentEditId = null;
-
-        // Düzenleme modalını aç
-        function openEditModal(record) {
-            return function(e) {
-                e.stopPropagation(); // Kartın tıklama olayını engelle
-                currentEditId = record.id;
-                const formData = record.form_data || {};
-                
-                document.getElementById('editName').value = formData.name || '';
-                document.getElementById('editClass').value = formData.class || '9';
-                document.getElementById('editCurriculum').value = formData.curriculum || 'meb';
-                document.getElementById('editFutuvvet').value = formData.futuvvet || 'Adalet';
-                
-                document.getElementById('editModal').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            };
-        }
-
-        // Düzenleme modalını kapat
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-            document.body.style.overflow = '';
-            currentEditId = null;
-        }
-
-        // Düzenlemeyi kaydet
-        async function saveEdit() {
-            if (!currentEditId) return;
-
-            const formData = {
-                name: document.getElementById('editName').value,
-                class: document.getElementById('editClass').value,
-                curriculum: document.getElementById('editCurriculum').value,
-                futuvvet: document.getElementById('editFutuvvet').value
-            };
 
             try {
                 const { error } = await supabase
                     .from('ders_planlari')
-                    .update({ form_data: formData })
-                    .eq('id', currentEditId);
+                    .delete()
+                    .eq('id', id);
 
                 if (error) throw error;
 
-                closeEditModal();
-                loadRecords(); // Kayıtları yeniden yükle
+                // Kayıtları yeniden yükle
+                loadRecords();
             } catch (error) {
-                console.error('Düzenleme hatası:', error);
-                alert('Düzenleme sırasında bir hata oluştu: ' + error.message);
+                console.error('Silme hatası:', error);
+                alert('Kayıt silinirken bir hata oluştu.');
             }
-        }
-
-        // Kaydı sil
-        function deleteRecord(id) {
-            return async function(e) {
-                e.stopPropagation(); // Kartın tıklama olayını engelle
-                
-                if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
-                    return;
-                }
-
-                try {
-                    const { error } = await supabase
-                        .from('ders_planlari')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-
-                    loadRecords(); // Kayıtları yeniden yükle
-                } catch (error) {
-                    console.error('Silme hatası:', error);
-                    alert('Silme sırasında bir hata oluştu: ' + error.message);
-                }
-            };
         }
 
         // Kayıtları yükle
         async function loadRecords() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const recordsList = document.getElementById('recordsList');
+
             try {
-                const { data, error } = await supabase
+                loading.style.display = 'block';
+                error.style.display = 'none';
+
+                const { data, error: fetchError } = await supabase
                     .from('ders_planlari')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (fetchError) throw fetchError;
 
-                const recordsContainer = document.getElementById('records');
-                recordsContainer.innerHTML = '';
+                recordsList.innerHTML = '';
 
                 if (!data || data.length === 0) {
-                    recordsContainer.innerHTML = '<p class="loading">Henüz kayıt bulunmuyor.</p>';
+                    recordsList.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="empty-message">
+                                Henüz kayıt bulunmuyor.
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
 
                 data.forEach(record => {
-                    try {
-                        const card = createCard(record);
-                        recordsContainer.appendChild(card);
-                    } catch (cardError) {
-                        console.error('Kart oluşturma hatası:', cardError);
-                    }
+                    const formData = record.form_data || {};
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formData.name || 'Belirtilmemiş'}</td>
+                        <td>${formData.class ? formData.class + '. Sınıf' : 'Belirtilmemiş'}</td>
+                        <td>${formData.curriculum || 'Belirtilmemiş'}</td>
+                        <td>${formData.futuvvet || 'Belirtilmemiş'}</td>
+                        <td>${formatDate(record.created_at)}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-button delete-button" onclick="deleteRecord(${record.id})">
+                                    Sil
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    recordsList.appendChild(row);
                 });
 
-            } catch (error) {
-                console.error('Hata:', error);
-                document.getElementById('error').textContent = `Hata: ${error.message}`;
-                document.getElementById('error').style.display = 'block';
+            } catch (err) {
+                console.error('Hata:', err);
+                error.textContent = 'Kayıtlar yüklenirken bir hata oluştu.';
+                error.style.display = 'block';
             } finally {
-                document.getElementById('loading').style.display = 'none';
+                loading.style.display = 'none';
             }
         }
-
-        // Kart oluşturma fonksiyonu
-        function createCard(record) {
-            const card = document.createElement('div');
-            card.className = 'record-card';
-            
-            // Form verilerini güvenli bir şekilde al
-            const formData = record.form_data || {};
-            const name = formData.name || 'İsim belirtilmemiş';
-            const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
-            const curriculum = formData.curriculum || 'Belirtilmemiş';
-            const futuvvet = formData.futuvvet || 'Belirtilmemiş';
-
-            // Webhook yanıtını al
-            const webhookResponse = record.webhook_response || {};
-            const markdownContent = webhookResponse.markdown_content || 'İçerik bulunamadı';
-            const previewText = markdownContent.length > 200 
-                ? markdownContent.substring(0, 200) + '...'
-                : markdownContent;
-
-            card.innerHTML = `
-                <div class="record-header">
-                    <h2 class="record-title">${name}</h2>
-                </div>
-                <div class="record-content">
-                    <div class="record-field">
-                        <div class="field-label">Sınıf</div>
-                        <div class="field-value">${className}</div>
-                    </div>
-                    <div class="record-field">
-                        <div class="field-label">Müfredat</div>
-                        <div class="field-value">${curriculum}</div>
-                    </div>
-                    <div class="record-field">
-                        <div class="field-label">Fütüvvet Kavramı</div>
-                        <div class="field-value">${futuvvet}</div>
-                    </div>
-                    <div class="record-field">
-                        <div class="field-label">Ders Planı</div>
-                        <div class="markdown-preview">${marked.parse(previewText)}</div>
-                    </div>
-                </div>
-                <div class="record-footer">
-                    ${formatDate(record.created_at)}
-                </div>
-                <div class="card-actions">
-                    <button class="action-button edit-button">Düzenle</button>
-                    <button class="action-button delete-button">Sil</button>
-                </div>
-            `;
-
-            // Event listener'ları ekle
-            const editButton = card.querySelector('.edit-button');
-            const deleteButton = card.querySelector('.delete-button');
-
-            editButton.addEventListener('click', openEditModal(record));
-            deleteButton.addEventListener('click', deleteRecord(record.id));
-
-            // Karta tıklama olayı ekle
-            card.addEventListener('click', () => openModal(record));
-
-            return card;
-        }
-
-        // Modal dışına tıklandığında kapat
-        window.onclick = function(event) {
-            const modal = document.getElementById('recordModal');
-            const editModal = document.getElementById('editModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-            if (event.target === editModal) {
-                closeEditModal();
-            }
-        }
-
-        // ESC tuşuna basıldığında modalları kapat
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-                closeEditModal();
-            }
-        });
 
         // Sayfa yüklendiğinde kayıtları getir
         document.addEventListener('DOMContentLoaded', loadRecords);
