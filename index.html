@@ -47,6 +47,9 @@
         .nav-links {
             margin-bottom: 2rem;
             text-align: right;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
         }
 
         .nav-link {
@@ -184,6 +187,14 @@
             h1 {
                 font-size: 1.5rem;
             }
+            .nav-links {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-link {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -191,6 +202,7 @@
     <div class="container">
         <div class="nav-links">
             <a href="records.html" class="nav-link">Tüm Kayıtları Görüntüle</a>
+            <a href="planlar.html" class="nav-link">Planları Görüntüle</a>
         </div>
         <h1>Ders Planı</h1>
         <form id="n8nForm">
