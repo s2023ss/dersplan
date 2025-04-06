@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ders Planı Detay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #10B981;
+            --bg-color: #F3F4F6;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #fff;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #059669;
+        }
+
+        .plan-info {
+            color: var(--text-color);
+            font-size: 0.875rem;
+        }
+
+        /* Akordion Stilleri */
+        .accordion-section {
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: white;
+        }
+
+        .accordion-header {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+        }
+
+        .accordion-header:hover {
+            background-color: #E5E7EB;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 1.5rem;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .accordion-content.active {
+            display: block;
+        }
+
+        .accordion-arrow {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s;
+        }
+
+        .accordion-header.active .accordion-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Markdown içerik stilleri */
+        .markdown-content {
+            line-height: 1.6;
+        }
+
+        .markdown-content h3 {
+            font-size: 1.25rem;
+            margin: 1rem 0;
+            color: var(--text-color);
+        }
+
+        .markdown-content p {
+            margin: 0.75rem 0;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .markdown-content li {
+            margin: 0.5rem 0;
+        }
+
+        .markdown-content code {
+            background-color: var(--bg-color);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .markdown-content pre {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            margin: 1rem 0;
+            padding: 0.5rem 0 0.5rem 1rem;
+            background-color: var(--bg-color);
+        }
+
+        #loading, #error {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        #loading {
+            color: var(--primary-color);
+        }
+
+        #error {
+            color: #DC2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="plangor.html" class="back-button">← Listeye Dön</a>
+            <div class="plan-info">
+                ID: <span id="planId"></span>
+            </div>
+        </div>
+
+        <div id="loading">Yükleniyor...</div>
+        <div id="error"></div>
+        <div id="content"></div>
+    </div>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://ebojfjqybdhnzwzszdqw.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA'
+        );
+
+        function createAccordionSection(title, content) {
+            return `
+                <div class="accordion-section">
+                    <div class="accordion-header">
+                        ${title}
+                        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="accordion-content">
+                        ${content}
+                    </div>
+                </div>
+            `;
+        }
+
+        function parseMarkdownToAccordions(markdown) {
+            const lines = markdown.split('\n');
+            let sections = [];
+            let currentTitle = '';
+            let currentContent = [];
+            let isCollectingContent = false;
+
+            lines.forEach(line => {
+                if (line.startsWith('## ')) {
+                    if (currentTitle && currentContent.length > 0) {
+                        sections.push({
+                            title: currentTitle,
+                            content: marked.parse(currentContent.join('\n'))
+                        });
+                    }
+                    currentTitle = line.substring(3).trim();
+                    currentContent = [];
+                    isCollectingContent = true;
+                } else if (isCollectingContent) {
+                    currentContent.push(line);
+                }
+            });
+
+            if (currentTitle && currentContent.length > 0) {
+                sections.push({
+                    title: currentTitle,
+                    content: marked.parse(currentContent.join('\n'))
+                });
+            }
+
+            return sections;
+        }
+
+        async function loadPlanDetail() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const content = document.getElementById('content');
+            const planIdElement = document.getElementById('planId');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            if (!id) {
+                error.textContent = 'Plan ID bulunamadı';
+                error.style.display = 'block';
+                return;
+            }
+
+            planIdElement.textContent = id;
+
+            try {
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                content.style.display = 'none';
+
+                const { data, error: fetchError } = await supabase
+                    .from('ders_planlari')
+                    .select('ders')
+                    .eq('id', id)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                if (!data) {
+                    throw new Error('Plan bulunamadı');
+                }
+
+                const sections = parseMarkdownToAccordions(data.ders);
+                content.innerHTML = sections
+                    .map(section => createAccordionSection(section.title, section.content))
+                    .join('');
+
+                // Akordion işlevselliği
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const content = header.nextElementSibling;
+                        const isActive = header.classList.contains('active');
+
+                        // Tüm akordionları kapat
+                        document.querySelectorAll('.accordion-header').forEach(h => {
+                            h.classList.remove('active');
+                            h.nextElementSibling.classList.remove('active');
+                        });
+
+                        // Tıklanan akordion kapalıysa aç
+                        if (!isActive) {
+                            header.classList.add('active');
+                            content.classList.add('active');
+                        }
+                    });
+                });
+
+                content.style.display = 'block';
+
+            } catch (err) {
+                console.error('Hata:', err);
+                error.textContent = 'Plan yüklenirken bir hata oluştu';
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPlanDetail);
+    </script>
+</body>
+</html> 

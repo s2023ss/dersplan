@@ -45,29 +45,27 @@
         }
 
         .nav-links {
-            margin-bottom: 2rem;
-            text-align: right;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
             display: flex;
             gap: 1rem;
-            justify-content: flex-end;
         }
 
         .nav-link {
             display: inline-flex;
             align-items: center;
+            padding: 0.5rem 1rem;
             background-color: var(--primary-color);
             color: white;
-            padding: 0.75rem 1.25rem;
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 0.875rem;
+            border-radius: 4px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: background-color 0.2s;
         }
 
         .nav-link:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-1px);
+            background-color: #059669;
         }
 
         h1 {
@@ -201,8 +199,8 @@
 <body>
     <div class="container">
         <div class="nav-links">
-            <a href="records.html" class="nav-link">Tüm Kayıtları Görüntüle</a>
-            <a href="planlar.html" class="nav-link">Planları Görüntüle</a>
+            <a href="response.html" class="nav-link">Son Yanıtı Görüntüle</a>
+            <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
         </div>
         <h1>Ders Planı</h1>
         <form id="n8nForm">

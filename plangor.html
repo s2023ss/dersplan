@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ders Planları</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Marked.js için -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #10B981;
+            --bg-color: #F3F4F6;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #fff;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #059669;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        .plan-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-link:hover {
+            text-decoration: underline;
+        }
+
+        .plan-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .created-at {
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+
+        #loading, #error {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        #loading {
+            color: var(--primary-color);
+        }
+
+        #error {
+            color: #DC2626;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 2rem auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        /* Markdown Content Styles */
+        .markdown-content {
+            line-height: 1.6;
+        }
+
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .markdown-content p {
+            margin: 1rem 0;
+        }
+
+        .markdown-content ul, 
+        .markdown-content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-button">← Ana Sayfaya Dön</a>
+        </div>
+        <div id="loading">Yükleniyor...</div>
+        <div id="error"></div>
+        <div id="contentContainer"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sınıf</th>
+                    <th>Müfredat</th>
+                    <th>Oluşturma Tarihi</th>
+                </tr>
+            </thead>
+            <tbody id="dataList"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">&times;</button>
+            <div id="modalContent" class="markdown-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://ebojfjqybdhnzwzszdqw.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA'
+        );
+
+        function formatDate(isoString) {
+            return new Date(isoString).toLocaleString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function parseFormData(formDataRaw) {
+            try {
+                // Eğer string ise JSON parse et
+                const formData = typeof formDataRaw === 'string' 
+                    ? JSON.parse(formDataRaw) 
+                    : formDataRaw;
+
+                // Eğer form_data null veya undefined ise boş obje döndür
+                if (!formData) return {};
+
+                // webhook_response içinde olabilir
+                if (formData.webhook_response) {
+                    try {
+                        const webhookData = typeof formData.webhook_response === 'string'
+                            ? JSON.parse(formData.webhook_response)
+                            : formData.webhook_response;
+                        
+                        if (webhookData && webhookData.form_data) {
+                            return webhookData.form_data;
+                        }
+                    } catch (e) {
+                        console.warn('webhook_response parse edilemedi:', e);
+                    }
+                }
+
+                return formData;
+            } catch (e) {
+                console.warn('form_data parse edilemedi:', e);
+                return {};
+            }
+        }
+
+        function showModal(content) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = marked.parse(content || 'İçerik bulunamadı');
+            modal.style.display = 'block';
+            
+            // ESC tuşu ile kapatma
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            // Modal dışına tıklama ile kapatma
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeModal();
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+
+        async function loadData() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const dataList = document.getElementById('dataList');
+
+            try {
+                loading.style.display = 'block';
+                error.style.display = 'none';
+
+                // Doğrudan sinif ve mufredat sütunlarını seçiyoruz
+                const { data, error: fetchError } = await supabase
+                    .from('ders_planlari')
+                    .select('id, created_at, sinif, mufredat')
+                    .order('created_at', { ascending: false });
+
+                if (fetchError) throw fetchError;
+
+                dataList.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    dataList.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 2rem;">
+                                Veri bulunamadı
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <a href="detay.html?id=${item.id}" class="plan-link">
+                                <span class="badge">${item.sinif || 'Belirtilmemiş'}</span>
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="detay.html?id=${item.id}" class="plan-link">
+                                ${item.mufredat || 'Belirtilmemiş'}
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="created-at">${formatDate(item.created_at)}</span>
+                        </td>
+                    `;
+                    dataList.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error('Hata:', err);
+                error.textContent = 'Veriler yüklenirken bir hata oluştu.';
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+        });
+    </script>
+</body>
+</html> 
