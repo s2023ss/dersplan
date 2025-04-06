@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ders Planları</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Marked.js için -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --bg-color: #F3F4F6;
+            --text-color: #1F2937;
+            --text-light: #6B7280;
+            --border-color: #E5E7EB;
+            --danger-color: #DC2626;
+            --danger-dark: #B91C1C;
+            --danger-light: #FEE2E2;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #fff;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #059669;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        .plan-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-link:hover {
+            text-decoration: underline;
+        }
+
+        .plan-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .created-at {
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+
+        #loading, #error {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        #loading {
+            color: var(--primary-color);
+        }
+
+        #error {
+            color: #DC2626;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 2rem auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        /* Markdown Content Styles */
+        .markdown-content {
+            line-height: 1.6;
+        }
+
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .markdown-content p {
+            margin: 1rem 0;
+        }
+
+        .markdown-content ul, 
+        .markdown-content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 0.75rem;
+                min-width: 120px;
+            }
+
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.5rem;
+            }
+
+            .plan-link svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .back-button {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Tablo başlıkları için sticky pozisyon */
+        th {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            z-index: 10;
+        }
+
+        /* Hover efektleri için iyileştirme */
+        @media (hover: hover) {
+            .plan-link:hover {
+                color: var(--primary-dark);
+            }
+        }
+
+        .delete-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .delete-btn:hover {
+            background-color: var(--danger-dark);
+        }
+
+        .delete-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .modal-content h3 {
+            margin: 0 0 1rem 0;
+            color: var(--text-color);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .delete-button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .delete-button:hover {
+            background-color: var(--danger-dark);
+        }
+
+        .cancel-button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cancel-button:hover {
+            background-color: var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-button">← Ana Sayfaya Dön</a>
+        </div>
+        <div id="loading">Yükleniyor...</div>
+        <div id="error"></div>
+        <div id="contentContainer"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sınıf</th>
+                    <th>Müfredat</th>
+                    <th>Oluşturma Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="dataList"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">&times;</button>
+            <div id="modalContent" class="markdown-content"></div>
+        </div>
+    </div>
+
+    <!-- Silme Onay Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Kaydı Sil</h3>
+            <p>Bu kaydı silmek istediğinizden emin misiniz?</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete" class="delete-button">Evet, Sil</button>
+                <button id="cancelDelete" class="cancel-button">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://ebojfjqybdhnzwzszdqw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function formatDate(isoString) {
+            return new Date(isoString).toLocaleString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        let recordToDelete = null;
+
+        function showDeleteModal(id) {
+            recordToDelete = id;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function hideDeleteModal() {
+            recordToDelete = null;
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        async function deleteRecord() {
+            if (!recordToDelete) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('ders_planlari')
+                    .delete()
+                    .eq('id', recordToDelete);
+
+                if (error) throw error;
+
+                // Başarılı silme işlemi sonrası
+                hideDeleteModal();
+                loadData(); // Tabloyu yenile
+                alert('Kayıt başarıyla silindi.');
+
+            } catch (error) {
+                console.error('Silme hatası:', error);
+                alert('Kayıt silinirken bir hata oluştu.');
+            }
+        }
+
+        async function loadData() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const dataList = document.getElementById('dataList');
+
+            try {
+                loading.style.display = 'block';
+                error.style.display = 'none';
+
+                const { data, error: fetchError } = await supabaseClient
+                    .from('ders_planlari')
+                    .select('id, sinif, mufredat, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (fetchError) throw fetchError;
+
+                dataList.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    dataList.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 2rem;">
+                                Veri bulunamadı
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <a href="detay.html?id=${item.id}" class="plan-link">
+                                <span class="badge">${item.sinif || 'Belirtilmemiş'}</span>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="detay.html?id=${item.id}" class="plan-link">
+                                ${item.mufredat || 'Belirtilmemiş'}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="created-at">${formatDate(item.created_at)}</span>
+                        </td>
+                        <td>
+                            <button onclick="showDeleteModal(${item.id})" class="delete-btn">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                Sil
+                            </button>
+                        </td>
+                    `;
+                    dataList.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error('Hata:', err);
+                error.textContent = 'Veriler yüklenirken bir hata oluştu.';
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+
+            // Modal event listeners
+            document.getElementById('confirmDelete').addEventListener('click', deleteRecord);
+            document.getElementById('cancelDelete').addEventListener('click', hideDeleteModal);
+            
+            // Modal dışına tıklandığında kapat
+            document.getElementById('deleteModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('deleteModal')) {
+                    hideDeleteModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
