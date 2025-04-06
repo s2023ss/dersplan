@@ -212,8 +212,8 @@
             text-decoration: underline;
         }
 
-        /* Modal stiller */
-        .full-content-modal {
+        /* Modal stilleri */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -225,15 +225,14 @@
             overflow-y: auto;
         }
 
-        .modal-container {
-            position: relative;
-            background-color: white;
+        .modal-content {
+            background-color: #fff;
             margin: 2rem auto;
-            padding: 0;
             width: 90%;
-            max-width: 900px;
+            max-width: 800px;
             border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .modal-header {
@@ -241,19 +240,18 @@
             color: white;
             padding: 1.5rem;
             border-radius: 12px 12px 0 0;
-            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .modal-title {
             font-size: 1.25rem;
             font-weight: 600;
-            margin-right: 2rem;
+            margin: 0;
         }
 
         .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
             background: none;
             border: none;
             color: white;
@@ -262,7 +260,6 @@
             padding: 0.5rem;
             line-height: 1;
             border-radius: 4px;
-            transition: background-color 0.2s;
         }
 
         .modal-close:hover {
@@ -275,54 +272,44 @@
             overflow-y: auto;
         }
 
-        /* Markdown içerik stilleri */
-        .markdown-content {
+        .modal-content .markdown-content {
             line-height: 1.8;
-            color: var(--text-color);
         }
 
-        .markdown-content h1 {
-            font-size: 2rem;
-            margin: 1.5rem 0 1rem;
+        .modal-content .markdown-content h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
             color: var(--primary-color);
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
         }
 
-        .markdown-content h2 {
+        .modal-content .markdown-content h2 {
             font-size: 1.5rem;
-            margin: 1.25rem 0 0.75rem;
+            margin: 1.5rem 0 1rem;
             color: var(--text-color);
         }
 
-        .markdown-content h3 {
+        .modal-content .markdown-content h3 {
             font-size: 1.25rem;
-            margin: 1rem 0 0.5rem;
-            color: var(--text-color);
+            margin: 1.25rem 0 0.75rem;
         }
 
-        .markdown-content p {
+        .modal-content .markdown-content p {
             margin-bottom: 1rem;
         }
 
-        .markdown-content ul, 
-        .markdown-content ol {
+        .modal-content .markdown-content ul,
+        .modal-content .markdown-content ol {
             margin: 1rem 0;
             padding-left: 2rem;
         }
 
-        .markdown-content li {
+        .modal-content .markdown-content li {
             margin-bottom: 0.5rem;
         }
 
-        .markdown-content code {
-            background-color: var(--bg-color);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        .markdown-content pre {
+        .modal-content .markdown-content pre {
             background-color: var(--bg-color);
             padding: 1rem;
             border-radius: 6px;
@@ -330,38 +317,15 @@
             margin: 1rem 0;
         }
 
-        .markdown-content blockquote {
+        .modal-content .markdown-content blockquote {
             border-left: 4px solid var(--primary-color);
             margin: 1rem 0;
-            padding-left: 1rem;
+            padding: 0.5rem 0 0.5rem 1rem;
             color: var(--text-light);
         }
 
-        .markdown-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 6px;
-            margin: 1rem 0;
-        }
-
-        .markdown-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-
-        .markdown-content th,
-        .markdown-content td {
-            border: 1px solid var(--border-color);
-            padding: 0.75rem;
-        }
-
-        .markdown-content th {
-            background-color: var(--bg-color);
-        }
-
         @media (max-width: 768px) {
-            .modal-container {
+            .modal-content {
                 margin: 1rem;
                 width: auto;
             }
@@ -384,15 +348,15 @@
         <div id="plansList"></div>
     </div>
 
-    <!-- Modal yapısı -->
-    <div id="fullContentModal" class="full-content-modal">
-        <div class="modal-container">
+    <!-- Modal -->
+    <div id="contentModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Ders Planı</h2>
-                <button class="modal-close" onclick="closeFullContent()">&times;</button>
+                <h3 class="modal-title" id="modalTitle"></h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div id="fullContent" class="markdown-content"></div>
+                <div id="modalContent" class="markdown-content"></div>
             </div>
         </div>
     </div>
@@ -432,39 +396,24 @@
             if (!dersContent) return '';
 
             try {
-                // Markdown'ı HTML'e çevir
                 const htmlContent = marked.parse(dersContent);
-                
-                // HTML etiketlerini kaldır ve metni al
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = htmlContent;
                 const plainText = tempDiv.textContent || tempDiv.innerText;
-                
-                // İlk 200 kelimeyi al
                 const truncatedText = truncateText(plainText);
-                
-                // Kısaltılmış içeriği markdown'a çevir ve HTML olarak göster
                 const truncatedHtml = marked.parse(truncatedText);
-                
-                // Eğer içerik kısaltıldıysa "devamını oku" linki ekle
-                if (plainText.length > truncatedText.length) {
-                    // JavaScript string escape fonksiyonu
-                    const escapedContent = dersContent
-                        .replace(/\\/g, '\\\\')
-                        .replace(/'/g, "\\'")
-                        .replace(/"/g, '\\"')
-                        .replace(/\n/g, '\\n');
 
+                if (plainText.length > truncatedText.length) {
                     return `
                         <div class="ders-content">
                             ${truncatedHtml}
-                            <a href="#" class="read-more" onclick="event.stopPropagation(); showFullContent('${planId}', '${escapedContent}', '${title}'); return false;">
+                            <a href="#" class="read-more" onclick="event.preventDefault(); event.stopPropagation(); showModal('${title}', \`${dersContent.replace(/`/g, '\\`')}\`);">
                                 Devamını oku
                             </a>
                         </div>
                     `;
                 }
-                
+
                 return `<div class="ders-content">${truncatedHtml}</div>`;
             } catch (error) {
                 console.error('Ders içeriği formatlanırken hata:', error);
@@ -472,30 +421,20 @@
             }
         }
 
-        // Tam içeriği göster
-        function showFullContent(planId, content, title) {
-            try {
-                const modal = document.getElementById('fullContentModal');
-                const modalTitle = document.getElementById('modalTitle');
-                const fullContent = document.getElementById('fullContent');
+        // Modal fonksiyonları
+        function showModal(title, content) {
+            const modal = document.getElementById('contentModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
 
-                // Başlığı ayarla
-                modalTitle.textContent = title || 'Ders Planı';
-
-                // Markdown içeriğini HTML'e çevir
-                fullContent.innerHTML = marked.parse(content);
-
-                // Modalı göster
-                modal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            } catch (error) {
-                console.error('Modal açılırken hata:', error);
-                alert('İçerik görüntülenirken bir hata oluştu.');
-            }
+            modalTitle.textContent = title;
+            modalContent.innerHTML = marked.parse(content);
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
-        function closeFullContent() {
-            const modal = document.getElementById('fullContentModal');
+        function closeModal() {
+            const modal = document.getElementById('contentModal');
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
@@ -570,18 +509,23 @@
         }
 
         // Event Listeners
-        document.addEventListener('DOMContentLoaded', loadPlans);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPlans();
 
-        document.getElementById('fullContentModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFullContent();
-            }
-        });
+            // Modal dışına tıklandığında kapat
+            const modal = document.getElementById('contentModal');
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeFullContent();
-            }
+            // ESC tuşuna basıldığında modalı kapat
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
         });
     </script>
 </body>
