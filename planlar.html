@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Marked.js ekleyelim -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -168,6 +170,47 @@
                 text-align: center;
             }
         }
+
+        /* Ders içeriği için ek stiller */
+        .ders-content {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .ders-content h1,
+        .ders-content h2,
+        .ders-content h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .ders-content p {
+            margin-bottom: 0.75rem;
+        }
+
+        .ders-content ul,
+        .ders-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .read-more {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -203,6 +246,56 @@
         // JSON formatla
         function formatJSON(obj) {
             return JSON.stringify(obj, null, 2);
+        }
+
+        // İlk 200 kelimeyi al ve "devamını oku" linki ekle
+        function truncateText(text, wordLimit = 200) {
+            const words = text.split(/\s+/);
+            if (words.length <= wordLimit) return text;
+            
+            return words.slice(0, wordLimit).join(' ') + '...';
+        }
+
+        // Markdown'ı HTML'e çevir ve kısalt
+        function formatDersContent(dersContent, planId) {
+            if (!dersContent) return '';
+
+            try {
+                // Markdown'ı HTML'e çevir
+                const htmlContent = marked.parse(dersContent);
+                
+                // HTML etiketlerini kaldır ve metni al
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                const plainText = tempDiv.textContent || tempDiv.innerText;
+                
+                // İlk 200 kelimeyi al
+                const truncatedText = truncateText(plainText);
+                
+                // Kısaltılmış içeriği markdown'a çevir ve HTML olarak göster
+                const truncatedHtml = marked.parse(truncatedText);
+                
+                // Eğer içerik kısaltıldıysa "devamını oku" linki ekle
+                if (plainText.length > truncatedText.length) {
+                    return `
+                        <div class="ders-content">
+                            ${truncatedHtml}
+                            <a href="#" class="read-more" onclick="showFullContent('${planId}')">Devamını oku</a>
+                        </div>
+                    `;
+                }
+                
+                return `<div class="ders-content">${truncatedHtml}</div>`;
+            } catch (error) {
+                console.error('Ders içeriği formatlanırken hata:', error);
+                return '<div class="error">İçerik formatlanamadı</div>';
+            }
+        }
+
+        // Tam içeriği göster
+        function showFullContent(planId) {
+            // Modal veya popup ile tam içeriği göster
+            alert('Bu özellik henüz eklenmedi. Tam içerik görüntüleme yakında eklenecek.');
         }
 
         // Planları yükle
@@ -250,20 +343,10 @@
                                 <div class="field-label">Form Verileri:</div>
                                 <pre>${formatJSON(plan.form_data)}</pre>
                             </div>
-                            <div class="plan-field">
-                                <div class="field-label">Webhook Yanıtı:</div>
-                                <pre>${formatJSON(plan.webhook_response)}</pre>
-                            </div>
-                            ${plan.ad ? `
-                                <div class="plan-field">
-                                    <div class="field-label">Ad:</div>
-                                    <pre>${formatJSON(plan.ad)}</pre>
-                                </div>
-                            ` : ''}
                             ${plan.ders ? `
                                 <div class="plan-field">
-                                    <div class="field-label">Ders:</div>
-                                    <pre>${formatJSON(plan.ders)}</pre>
+                                    <div class="field-label">Ders Planı:</div>
+                                    ${formatDersContent(plan.ders, plan.id)}
                                 </div>
                             ` : ''}
                         </div>
