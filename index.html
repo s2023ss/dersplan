@@ -284,7 +284,7 @@
                 }
 
                 const webhookData = await webhookResponse.text();
-                console.log('Webhook ham yanıtı:', webhookData);
+                console.log('Webhook yanıtı:', webhookData);
 
                 // Webhook yanıtını JSON formatına dönüştür
                 const responseObject = {
@@ -292,23 +292,6 @@
                     timestamp: new Date().toISOString(),
                     markdown_content: webhookData
                 };
-
-                console.log('İşlenmiş webhook yanıtı:', responseObject);
-
-                // Supabase'e kaydet
-                const { data: insertData, error: insertError } = await supabaseClient
-                    .from('ders_planlari')
-                    .insert({
-                        form_data: formData,
-                        webhook_response: responseObject,
-                        created_at: new Date().toISOString()
-                    });
-
-                console.log('Supabase insert sonucu:', { insertData, insertError });
-
-                if (insertError) {
-                    throw new Error(`Supabase hatası: ${insertError.message}`);
-                }
 
                 // Başarılı yanıtı göster
                 successMessage.style.display = 'block';
