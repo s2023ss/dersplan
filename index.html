@@ -209,6 +209,91 @@
                 justify-content: center;
             }
         }
+
+        .processing-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .processing-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -60%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .processing-spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
+            border: 4px solid var(--primary-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .processing-content h3 {
+            color: var(--text-color);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.25rem;
+        }
+
+        .processing-content p {
+            color: var(--text-light);
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        body.processing {
+            overflow: hidden;
+        }
+
+        @media (max-width: 640px) {
+            .processing-content {
+                padding: 1.5rem;
+            }
+
+            .processing-spinner {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 1rem;
+            }
+
+            .processing-content h3 {
+                font-size: 1.125rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -261,6 +346,15 @@
         <p id="errorMessage" class="error-message">Bir hata oluştu. Lütfen tekrar deneyin.</p>
     </div>
 
+    <!-- Body içinde form'dan sonra eklenecek popup -->
+    <div id="processingPopup" class="processing-popup">
+        <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <h3>Ders Planı Hazırlanıyor</h3>
+            <p>Lütfen sayfayı kapatmayın...</p>
+        </div>
+    </div>
+
     <script>
         // Supabase bağlantısı
         const supabaseClient = supabase.createClient(
@@ -268,34 +362,43 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA'
         );
 
-        // Form gönderimi
-        document.getElementById('n8nForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitButton = document.getElementById('submitButton');
-            const loading = document.getElementById('loading');
+        function showProcessingPopup() {
+            const popup = document.getElementById('processingPopup');
+            document.body.classList.add('processing');
+            popup.style.display = 'block';
+        }
+
+        function hideProcessingPopup() {
+            const popup = document.getElementById('processingPopup');
+            document.body.classList.remove('processing');
+            popup.style.display = 'none';
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const loadingDiv = document.getElementById('loading');
             const successMessage = document.getElementById('successMessage');
             const errorMessage = document.getElementById('errorMessage');
-            
-            // Form verilerini al
-            const formData = {
-                name: document.getElementById('name').value,
-                class: document.getElementById('class').value,
-                curriculum: document.getElementById('curriculum').value,
-                futuvvet: document.getElementById('futuvvet').value
-            };
-
-            // Yükleme durumunu göster
-            submitButton.disabled = true;
-            loading.style.display = 'block';
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
 
             try {
-                console.log('Form verileri:', formData);
+                submitButton.disabled = true;
+                loadingDiv.style.display = 'block';
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                showProcessingPopup(); // Popup'ı göster
 
-                // N8N webhook'a istek gönder
-                const webhookResponse = await fetch('https://proegitim.app.n8n.cloud/webhook/webhook-1', {
+                const formData = {
+                    name: document.getElementById('name').value,
+                    class: document.getElementById('class').value,
+                    curriculum: document.getElementById('curriculum').value,
+                    futuvvet: document.getElementById('futuvvet').value
+                };
+
+                console.log('Gönderilen form verileri:', formData);
+
+                const response = await fetch('https://proegitim.app.n8n.cloud/webhook/webhook-1', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -303,37 +406,69 @@
                     body: JSON.stringify(formData)
                 });
 
-                if (!webhookResponse.ok) {
-                    throw new Error('Webhook yanıt vermedi');
+                if (!response.ok) {
+                    throw new Error('Webhook yanıtı başarısız');
                 }
 
-                const webhookData = await webhookResponse.text();
-                console.log('Webhook yanıtı:', webhookData);
+                console.log('Webhook yanıtı başarılı');
 
-                // Webhook yanıtını JSON formatına dönüştür
-                const responseObject = {
-                    status: 'success',
-                    timestamp: new Date().toISOString(),
-                    markdown_content: webhookData
-                };
+                // Veritabanına yazılması için bekle
+                await new Promise(resolve => setTimeout(resolve, 3000));
 
-                // Başarılı yanıtı göster
-                successMessage.style.display = 'block';
-                
-                // 3 saniye bekle ve yanıt sayfasına yönlendir
-                setTimeout(() => {
-                    const encodedResponse = btoa(JSON.stringify(responseObject));
-                    window.location.href = `response.html?response=${encodedResponse}`;
-                }, 3000);
+                // En son oluşturulan kaydı bul
+                const { data: records, error: fetchError } = await supabaseClient
+                    .from('ders_planlari')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (fetchError) {
+                    console.error('Supabase sorgu hatası:', fetchError);
+                    throw fetchError;
+                }
+
+                console.log('Bulunan kayıtlar:', records);
+
+                if (records && records.length > 0) {
+                    const record = records[0];
+                    console.log('En son kayıt:', record);
+
+                    successMessage.textContent = 'Ders Planı başarıyla oluşturuldu!';
+                    successMessage.style.display = 'block';
+                    successMessage.scrollIntoView({ behavior: 'smooth' });
+
+                    console.log('Oluşturulan link:', record.markdown_content);
+                } else {
+                    throw new Error('Kayıt bulunamadı');
+                }
+
+                form.reset();
 
             } catch (error) {
-                console.error('Hata detayı:', error);
-                errorMessage.textContent = `Hata: ${error.message}`;
+                console.error('Hata:', error);
+                errorMessage.textContent = 'Bir hata oluştu. Lütfen tekrar deneyin.';
                 errorMessage.style.display = 'block';
-                submitButton.disabled = false;
             } finally {
-                loading.style.display = 'none';
+                submitButton.disabled = false;
+                loadingDiv.style.display = 'none';
+                hideProcessingPopup(); // Popup'ı gizle
             }
+        }
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', handleSubmit);
+            }
+
+            // Tarayıcı kapatma/sayfa yenileme uyarısı
+            window.addEventListener('beforeunload', (e) => {
+                if (document.body.classList.contains('processing')) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
         });
     </script>
 </body>
