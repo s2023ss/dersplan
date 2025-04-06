@@ -562,36 +562,23 @@
             document.body.style.overflow = ''; // Arka plan kaydırmayı geri aç
         }
 
-        // Modal dışına tıklandığında kapat
-        window.onclick = function(event) {
-            const modal = document.getElementById('recordModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // ESC tuşuna basıldığında modalı kapat
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-        });
-
         // Düzenleme ve silme için global değişkenler
         let currentEditId = null;
 
         // Düzenleme modalını aç
         function openEditModal(record) {
-            event.stopPropagation(); // Kartın tıklama olayını engelle
-            currentEditId = record.id;
-            const formData = record.form_data || {};
-            
-            document.getElementById('editName').value = formData.name || '';
-            document.getElementById('editClass').value = formData.class || '9';
-            document.getElementById('editFutuvvet').value = formData.futuvvet || 'Adalet';
-            
-            document.getElementById('editModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            return function(e) {
+                e.stopPropagation(); // Kartın tıklama olayını engelle
+                currentEditId = record.id;
+                const formData = record.form_data || {};
+                
+                document.getElementById('editName').value = formData.name || '';
+                document.getElementById('editClass').value = formData.class || '9';
+                document.getElementById('editFutuvvet').value = formData.futuvvet || 'Adalet';
+                
+                document.getElementById('editModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            };
         }
 
         // Düzenleme modalını kapat
@@ -628,26 +615,28 @@
         }
 
         // Kaydı sil
-        async function deleteRecord(id) {
-            event.stopPropagation(); // Kartın tıklama olayını engelle
-            
-            if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
-                return;
-            }
+        function deleteRecord(id) {
+            return async function(e) {
+                e.stopPropagation(); // Kartın tıklama olayını engelle
+                
+                if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                    return;
+                }
 
-            try {
-                const { error } = await supabase
-                    .from('ders_planlari')
-                    .delete()
-                    .eq('id', id);
+                try {
+                    const { error } = await supabase
+                        .from('ders_planlari')
+                        .delete()
+                        .eq('id', id);
 
-                if (error) throw error;
+                    if (error) throw error;
 
-                loadRecords(); // Kayıtları yeniden yükle
-            } catch (error) {
-                console.error('Silme hatası:', error);
-                alert('Silme sırasında bir hata oluştu: ' + error.message);
-            }
+                    loadRecords(); // Kayıtları yeniden yükle
+                } catch (error) {
+                    console.error('Silme hatası:', error);
+                    alert('Silme sırasında bir hata oluştu: ' + error.message);
+                }
+            };
         }
 
         // Kart oluşturma fonksiyonunu güncelle
@@ -665,7 +654,8 @@
                 ? markdownContent.substring(0, 200) + '...'
                 : markdownContent;
 
-            card.innerHTML = `
+            // Kart içeriğini oluştur
+            const cardContent = `
                 <div class="record-header">
                     <h2 class="record-title">${name}</h2>
                 </div>
@@ -687,14 +677,19 @@
                     ${formatDate(record.created_at)}
                 </div>
                 <div class="card-actions">
-                    <button class="action-button edit-button" onclick="openEditModal(${JSON.stringify(record)})">
-                        Düzenle
-                    </button>
-                    <button class="action-button delete-button" onclick="deleteRecord(${record.id})">
-                        Sil
-                    </button>
+                    <button class="action-button edit-button">Düzenle</button>
+                    <button class="action-button delete-button">Sil</button>
                 </div>
             `;
+
+            card.innerHTML = cardContent;
+
+            // Event listener'ları ayrı ayrı ekle
+            const editButton = card.querySelector('.edit-button');
+            const deleteButton = card.querySelector('.delete-button');
+
+            editButton.addEventListener('click', openEditModal(record));
+            deleteButton.addEventListener('click', deleteRecord(record.id));
 
             // Karta tıklama olayı ekle
             card.addEventListener('click', () => openModal(record));
@@ -738,8 +733,28 @@
             }
         }
 
+        // Modal dışına tıklandığında kapat
+        window.onclick = function(event) {
+            const modal = document.getElementById('recordModal');
+            const editModal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+            if (event.target === editModal) {
+                closeEditModal();
+            }
+        }
+
+        // ESC tuşuna basıldığında modalları kapat
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeEditModal();
+            }
+        });
+
         // Sayfa yüklendiğinde kayıtları getir
-        window.addEventListener('DOMContentLoaded', loadRecords);
+        document.addEventListener('DOMContentLoaded', loadRecords);
     </script>
 </body>
 </html>
