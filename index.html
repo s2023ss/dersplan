@@ -26,7 +26,6 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
-            font-family: 'Inter', sans-serif;
         }
 
         .container {
@@ -38,7 +37,9 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
+        /* Mobil için nav-links düzenlemesi */
         .nav-links {
+            position: static;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -47,9 +48,12 @@
 
         @media (min-width: 640px) {
             .nav-links {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
                 flex-direction: row;
                 gap: 1rem;
-                justify-content: flex-end;
+                margin-bottom: 0;
             }
 
             body {
@@ -69,12 +73,14 @@
             font-weight: 500;
             transition: background-color 0.2s;
             text-align: center;
+            width: 100%;
         }
 
         .nav-link:hover {
             background-color: var(--primary-dark);
         }
 
+        /* Form stilleri */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -135,57 +141,72 @@
             color: var(--text-color);
         }
 
-        #loadingIndicator {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .loading {
+            display: none;
             text-align: center;
-            z-index: 1000;
+            margin: 2rem 0;
         }
 
-        #resultArea {
-            margin-top: 1.5rem;
+        .loading-spinner {
+            display: inline-block;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .success-message, .error-message {
             padding: 1rem;
             border-radius: 8px;
-            background-color: var(--primary-light);
-            border: 1px solid var(--primary-color);
-        }
-
-        .btn-primary {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
+            margin: 1rem 0;
             font-weight: 500;
-            transition: background-color 0.2s;
+            display: none;
         }
 
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
+        .success-message {
+            background-color: #ecfdf5;
+            color: var(--success-color);
+            border: 1px solid #d1fae5;
+        }
+
+        .error-message {
+            background-color: #fef2f2;
+            color: var(--error-color);
+            border: 1px solid #fee2e2;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 640px) {
-            .container {
+            body {
                 padding: 1rem;
+            }
+            
+            .container {
+                padding: 1.5rem;
             }
             
             h1 {
                 font-size: 1.5rem;
             }
-            
             .nav-links {
                 flex-direction: column;
+                align-items: stretch;
             }
             
             .nav-link {
-                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -193,13 +214,17 @@
 <body>
     <div class="container">
         <div class="nav-links">
-            <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
+                        <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
         </div>
         <h1>Ders Planı</h1>
         <form id="n8nForm">
             <div class="form-group">
-                <label for="sinif">Sınıf</label>
-                <select id="sinif" name="sinif" required>
+                <label for="name">Ad Soyad</label>
+                <input type="text" id="name" name="name" required placeholder="Adınız ve soyadınız">
+            </div>
+            <div class="form-group">
+                <label for="class">Sınıf</label>
+                <select id="class" name="class" required>
                     <option value="">Sınıf Seçiniz</option>
                     <option value="1">1. Sınıf</option>
                     <option value="2">2. Sınıf</option>
@@ -212,121 +237,103 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="mufredat">Müfredat Konusu</label>
-                <input type="text" id="mufredat" name="mufredat" required placeholder="Müfredat konusunu giriniz">
+                <label for="curriculum">Müfredat Konusu</label>
+                <input type="text" id="curriculum" name="curriculum" required placeholder="Müfredat konusunu giriniz">
             </div>
             <div class="form-group">
-                <label for="ders">Ders</label>
-                <input type="text" id="ders" name="ders" required placeholder="Ders adını giriniz">
+                <label for="futuvvet">Fütüvvet Kavramı</label>
+                <select id="futuvvet" name="futuvvet" required>
+                    <option value="">Fütüvvet Kavramı Seçiniz</option>
+                    <option value="cömertlik">Cömertlik (Sehâvet)</option>
+                    <option value="tevazu">Tevazu (Alçakgönüllülük)</option>
+                    <option value="vefa">Vefa (Sözünde Durma)</option>
+                    <option value="dogruluk">Doğruluk (Sıdk)</option>
+                    <option value="fedakarlik">Fedakarlık (Îsâr)</option>
+                </select>
             </div>
-            <button type="submit">Ders Planı Oluştur</button>
+            <button type="submit" id="submitButton">Gönder</button>
         </form>
-
-        <div id="resultArea" style="display: none;">
-            <div class="alert alert-success">
-                <p>Form başarıyla gönderildi!</p>
-                <div id="linkContainer">
-                    <!-- Link buraya dinamik olarak eklenecek -->
-                </div>
-            </div>
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Ders Planı Oluşturuluyor ve yanıt bekleniyor...1 dakika içinde işlem tamamlanacaktır.</div>
         </div>
-
-        <div id="loadingIndicator" style="display: none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">İşleniyor...</span>
-            </div>
-            <p class="mt-2">Ders Planı Hazırlanıyor...</p>
-        </div>
+        <p id="successMessage" class="success-message">Ders Planı başarıyla oluşturuldu! Ders Planlarını Görüntüle bölümünden ulaşabilirsiniz </p>
+        <p id="errorMessage" class="error-message">Bir hata oluştu. Lütfen tekrar deneyin.</p>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const form = document.querySelector('form');
-            const resultArea = document.getElementById('resultArea');
-            const linkContainer = document.getElementById('linkContainer');
-            const loadingIndicator = document.getElementById('loadingIndicator');
+        // Supabase bağlantısı
+        const supabaseClient = supabase.createClient(
+            'https://ebojfjqybdhnzwzszdqw.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA'
+        );
 
-            // Supabase Setup
-            const supabaseUrl = 'https://ebojfjqybdhnzwzszdqw.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA';
-            const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        // Form gönderimi
+        document.getElementById('n8nForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitButton = document.getElementById('submitButton');
+            const loading = document.getElementById('loading');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Form verilerini al
+            const formData = {
+                name: document.getElementById('name').value,
+                class: document.getElementById('class').value,
+                curriculum: document.getElementById('curriculum').value,
+                futuvvet: document.getElementById('futuvvet').value
+            };
 
-            if (!form || !resultArea || !linkContainer || !loadingIndicator) {
-                console.error('Required elements not found');
-                return;
-            }
+            // Yükleme durumunu göster
+            submitButton.disabled = true;
+            loading.style.display = 'block';
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
 
-            async function handleFormSubmit(event) {
-                event.preventDefault();
+            try {
+                console.log('Form verileri:', formData);
 
-                try {
-                    // UI state: Loading
-                    loadingIndicator.style.display = 'block';
-                    resultArea.style.display = 'none';
-                    form.querySelector('button[type="submit"]').disabled = true;
+                // N8N webhook'a istek gönder
+                const webhookResponse = await fetch('https://proegitim.app.n8n.cloud/webhook/webhook-1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-                    // Get form data
-                    const formData = {
-                        sinif: form.querySelector('[name="sinif"]')?.value || '',
-                        mufredat: form.querySelector('[name="mufredat"]')?.value || '',
-                        ders: form.querySelector('[name="ders"]')?.value || ''
-                    };
-
-                    // Send to webhook
-                    const webhookResponse = await fetch('https://proegitim.app.n8n.cloud/webhook/webhook-1', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (!webhookResponse.ok) {
-                        throw new Error('Webhook request failed');
-                    }
-
-                    // Wait for database update
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-
-                    // Get latest record
-                    const { data: records, error: fetchError } = await supabaseClient
-                        .from('ders_planlari')
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-
-                    if (fetchError) throw fetchError;
-
-                    if (records && records.length > 0) {
-                        // Create view link
-                        const link = document.createElement('a');
-                        link.href = `detay.html?id=${records[0].id}`;
-                        link.className = 'btn-primary';
-                        link.textContent = 'Son Kaydı Görüntüle';
-                        
-                        // Clear and update link container
-                        linkContainer.innerHTML = '';
-                        linkContainer.appendChild(link);
-                        
-                        // Show result area
-                        resultArea.style.display = 'block';
-                        resultArea.scrollIntoView({ behavior: 'smooth' });
-                    }
-
-                    // Reset form
-                    form.reset();
-
-                } catch (error) {
-                    console.error('Form submission error:', error);
-                    alert('İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-                } finally {
-                    // Reset UI state
-                    loadingIndicator.style.display = 'none';
-                    form.querySelector('button[type="submit"]').disabled = false;
+                if (!webhookResponse.ok) {
+                    throw new Error('Webhook yanıt vermedi');
                 }
-            }
 
-            // Add form submit listener
-            form.addEventListener('submit', handleFormSubmit);
+                const webhookData = await webhookResponse.text();
+                console.log('Webhook yanıtı:', webhookData);
+
+                // Webhook yanıtını JSON formatına dönüştür
+                const responseObject = {
+                    status: 'success',
+                    timestamp: new Date().toISOString(),
+                    markdown_content: webhookData
+                };
+
+                // Başarılı yanıtı göster
+                successMessage.style.display = 'block';
+                
+                // 3 saniye bekle ve yanıt sayfasına yönlendir
+                setTimeout(() => {
+                    const encodedResponse = btoa(JSON.stringify(responseObject));
+                    window.location.href = `response.html?response=${encodedResponse}`;
+                }, 3000);
+
+            } catch (error) {
+                console.error('Hata detayı:', error);
+                errorMessage.textContent = `Hata: ${error.message}`;
+                errorMessage.style.display = 'block';
+                submitButton.disabled = false;
+            } finally {
+                loading.style.display = 'none';
+            }
         });
     </script>
 </body>
