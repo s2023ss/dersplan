@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ders Planı</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Supabase Client -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -232,69 +234,79 @@
     </div>
 
     <script>
+        // Supabase bağlantı bilgileri
+        const supabaseUrl = 'https://ebojfjqybdhnzwzszdqw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Form gönderimi
         document.getElementById('n8nForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Form ve loading durumlarını ayarla
-            const form = this;
             const submitButton = document.getElementById('submitButton');
-            const loadingElement = document.getElementById('loading');
+            const loading = document.getElementById('loading');
             const successMessage = document.getElementById('successMessage');
             const errorMessage = document.getElementById('errorMessage');
-
-            // Form gönderimini başlat
-            submitButton.disabled = true;
-            loadingElement.style.display = 'block';
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
             
             // Form verilerini al
             const formData = {
-                name: form.name.value,
-                class: form.class.value,
-                futuvvet: form.futuvvet.value
+                name: document.getElementById('name').value,
+                class: document.getElementById('class').value,
+                futuvvet: document.getElementById('futuvvet').value
             };
 
-            const webhookUrl = 'https://proegitim.app.n8n.cloud/webhook/webhook-1';
+            // Yükleme durumunu göster
+            submitButton.disabled = true;
+            loading.style.display = 'block';
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
 
             try {
-                // İlk webhook çağrısı
-                const response = await fetch(webhookUrl, {
+                // N8N webhook'a istek gönder
+                const response = await fetch('https://proegitim.app.n8n.cloud/webhook/webhook-1', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(formData)
                 });
 
-                // Webhook yanıtını bekle ve JSON olarak al
-                const webhookResponse = await response.text();
-                
-                // Form başarıyla gönderildi
-                loadingElement.style.display = 'none';
+                if (!response.ok) {
+                    throw new Error('Webhook yanıt vermedi');
+                }
+
+                const responseData = await response.json();
+
+                // Supabase'e veriyi kaydet
+                const { data, error } = await supabase
+                    .from('ders_planlari')
+                    .insert([
+                        {
+                            form_data: formData,
+                            webhook_response: responseData,
+                            created_at: new Date().toISOString()
+                        }
+                    ]);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Başarılı yanıtı göster
                 successMessage.style.display = 'block';
                 
-                // Yanıt nesnesini oluştur
-                const responseData = {
-                    status: 'success',
-                    formData: formData,
-                    timestamp: new Date().toISOString(),
-                    output: webhookResponse
-                };
-                
-                // Yanıtı localStorage'a kaydet
-                localStorage.setItem('formResponse', JSON.stringify(responseData));
-                
-                // Yanıt sayfasına yönlendir
-                window.location.href = 'response.html';
+                // 3 saniye bekle ve yanıt sayfasına yönlendir
+                setTimeout(() => {
+                    const encodedResponse = btoa(JSON.stringify(responseData));
+                    window.location.href = `response.html?response=${encodedResponse}`;
+                }, 3000);
 
             } catch (error) {
-                loadingElement.style.display = 'none';
+                console.error('Hata:', error);
                 errorMessage.style.display = 'block';
                 submitButton.disabled = false;
-                console.error('Hata detayı:', error);
-                errorMessage.textContent = 'Bağlantı hatası oluştu. Lütfen tekrar deneyin.';
+            } finally {
+                loading.style.display = 'none';
             }
         });
     </script>
