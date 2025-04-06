@@ -450,11 +450,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="editCurriculum">Müfredat</label>
-                        <select id="editCurriculum" class="form-select" required>
-                            <option value="meb">MEB Müfredatı</option>
-                            <option value="ihh">İHH Müfredatı</option>
-                            <option value="diyanet">Diyanet Müfredatı</option>
-                        </select>
+                        <input type="text" id="editCurriculum" class="form-input" required placeholder="Müfredat konusunu giriniz">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="editFutuvvet">Fütüvvet Kavramı</label>
@@ -516,16 +512,6 @@
             }
         }
 
-        // Müfredat adını getir
-        function getMufredatName(curriculum) {
-            const mufredatMap = {
-                'meb': 'MEB Müfredatı',
-                'ihh': 'İHH Müfredatı',
-                'diyanet': 'Diyanet Müfredatı'
-            };
-            return mufredatMap[curriculum] || 'Belirtilmemiş';
-        }
-
         // Modal fonksiyonları
         function openModal(record) {
             const modal = document.getElementById('recordModal');
@@ -536,6 +522,7 @@
             const formData = record.form_data || {};
             const name = formData.name || 'İsim belirtilmemiş';
             const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
+            const curriculum = formData.curriculum || 'Belirtilmemiş';
             const futuvvet = formData.futuvvet || 'Belirtilmemiş';
             
             // Markdown içeriğini al
@@ -556,7 +543,7 @@
                         </div>
                         <div class="record-field">
                             <div class="field-label">Müfredat</div>
-                            <div class="field-value">${getMufredatName(formData.curriculum)}</div>
+                            <div class="field-value">${curriculum}</div>
                         </div>
                         <div class="record-field">
                             <div class="field-label">Fütüvvet Kavramı</div>
@@ -676,6 +663,7 @@
             const formData = record.form_data || {};
             const name = formData.name || 'İsim belirtilmemiş';
             const className = formData.class ? `${formData.class}. Sınıf` : 'Sınıf belirtilmemiş';
+            const curriculum = formData.curriculum || 'Belirtilmemiş';
             const futuvvet = formData.futuvvet || 'Belirtilmemiş';
             
             const markdownContent = getMarkdownContent(record);
@@ -683,8 +671,7 @@
                 ? markdownContent.substring(0, 200) + '...'
                 : markdownContent;
 
-            // Kart içeriğini oluştur
-            const cardContent = `
+            card.innerHTML = `
                 <div class="record-header">
                     <h2 class="record-title">${name}</h2>
                 </div>
@@ -695,7 +682,7 @@
                     </div>
                     <div class="record-field">
                         <div class="field-label">Müfredat</div>
-                        <div class="field-value">${getMufredatName(formData.curriculum)}</div>
+                        <div class="field-value">${curriculum}</div>
                     </div>
                     <div class="record-field">
                         <div class="field-label">Fütüvvet Kavramı</div>
@@ -714,8 +701,6 @@
                     <button class="action-button delete-button">Sil</button>
                 </div>
             `;
-
-            card.innerHTML = cardContent;
 
             // Event listener'ları ayrı ayrı ekle
             const editButton = card.querySelector('.edit-button');
