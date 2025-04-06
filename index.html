@@ -237,7 +237,7 @@
         // Supabase bağlantı bilgileri
         const supabaseUrl = 'https://ebojfjqybdhnzwzszdqw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Form gönderimi
         document.getElementById('n8nForm').addEventListener('submit', async function(e) {
@@ -276,6 +276,7 @@
                 }
 
                 const responseData = await response.json();
+                console.log('Webhook yanıtı:', responseData);
 
                 // Supabase'e veriyi kaydet
                 const { data, error } = await supabase
@@ -286,7 +287,10 @@
                             webhook_response: responseData,
                             created_at: new Date().toISOString()
                         }
-                    ]);
+                    ])
+                    .select();
+
+                console.log('Supabase yanıtı:', { data, error });
 
                 if (error) {
                     throw error;
@@ -303,6 +307,7 @@
 
             } catch (error) {
                 console.error('Hata:', error);
+                errorMessage.textContent = `Bir hata oluştu: ${error.message}`;
                 errorMessage.style.display = 'block';
                 submitButton.disabled = false;
             } finally {
