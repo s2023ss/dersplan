@@ -358,9 +358,12 @@
     </div>
 
     <script>
+        // Supabase client'ı başlat
         const supabaseUrl = 'https://ebojfjqybdhnzwzszdqw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVib2pmanF5YmRobnp3enN6ZHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5MjEwNDAsImV4cCI6MjA1OTQ5NzA0MH0.AA67DFJfOJjW5Czq1soVHFr9_aGVH24xGIVQSyD_8tA';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let recordToDelete = null;
 
         function formatDate(isoString) {
             return new Date(isoString).toLocaleString('tr-TR', {
@@ -372,40 +375,53 @@
             });
         }
 
-        let recordToDelete = null;
-
+        // Silme modalını göster
         function showDeleteModal(id) {
+            console.log('Silinecek kayıt ID:', id); // Debug için
             recordToDelete = id;
-            document.getElementById('deleteModal').style.display = 'block';
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'block';
         }
 
+        // Silme modalını gizle
         function hideDeleteModal() {
             recordToDelete = null;
-            document.getElementById('deleteModal').style.display = 'none';
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'none';
         }
 
+        // Kaydı sil
         async function deleteRecord() {
-            if (!recordToDelete) return;
+            if (!recordToDelete) {
+                console.error('Silinecek kayıt ID\'si bulunamadı');
+                return;
+            }
 
             try {
+                console.log('Silme işlemi başlatılıyor, ID:', recordToDelete); // Debug için
+
                 const { error } = await supabaseClient
                     .from('ders_planlari')
                     .delete()
                     .eq('id', recordToDelete);
 
-                if (error) throw error;
+                if (error) {
+                    console.error('Silme hatası:', error);
+                    throw error;
+                }
 
-                // Başarılı silme işlemi sonrası
+                console.log('Kayıt başarıyla silindi'); // Debug için
                 hideDeleteModal();
-                loadData(); // Tabloyu yenile
+                await loadData(); // Tabloyu yenile
                 alert('Kayıt başarıyla silindi.');
 
             } catch (error) {
-                console.error('Silme hatası:', error);
-                alert('Kayıt silinirken bir hata oluştu.');
+                console.error('Silme işlemi hatası:', error);
+                alert('Kayıt silinirken bir hata oluştu: ' + error.message);
             }
         }
 
+        // Verileri yükle
         async function loadData() {
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
@@ -452,7 +468,7 @@
                             <span class="created-at">${formatDate(item.created_at)}</span>
                         </td>
                         <td>
-                            <button onclick="showDeleteModal(${item.id})" class="delete-btn">
+                            <button onclick="showDeleteModal('${item.id}')" class="delete-btn">
                                 <svg viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                 </svg>
@@ -464,7 +480,7 @@
                 });
 
             } catch (err) {
-                console.error('Hata:', err);
+                console.error('Veri yükleme hatası:', err);
                 error.textContent = 'Veriler yüklenirken bir hata oluştu.';
                 error.style.display = 'block';
             } finally {
@@ -472,19 +488,32 @@
             }
         }
 
+        // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', () => {
+            // Verileri yükle
             loadData();
 
-            // Modal event listeners
-            document.getElementById('confirmDelete').addEventListener('click', deleteRecord);
-            document.getElementById('cancelDelete').addEventListener('click', hideDeleteModal);
-            
+            // Modal butonları için event listener'lar
+            const confirmDeleteBtn = document.getElementById('confirmDelete');
+            const cancelDeleteBtn = document.getElementById('cancelDelete');
+            const deleteModal = document.getElementById('deleteModal');
+
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', deleteRecord);
+            }
+
+            if (cancelDeleteBtn) {
+                cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+            }
+
             // Modal dışına tıklandığında kapat
-            document.getElementById('deleteModal').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('deleteModal')) {
-                    hideDeleteModal();
-                }
-            });
+            if (deleteModal) {
+                deleteModal.addEventListener('click', (e) => {
+                    if (e.target === deleteModal) {
+                        hideDeleteModal();
+                    }
+                });
+            }
         });
     </script>
 </body>
