@@ -10,8 +10,11 @@
     <style>
         :root {
             --primary-color: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
             --bg-color: #F3F4F6;
             --text-color: #1F2937;
+            --text-light: #6B7280;
             --border-color: #E5E7EB;
         }
 
@@ -27,9 +30,9 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
+            padding: 1rem;
             background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
@@ -65,27 +68,25 @@
 
         /* Akordion Stilleri */
         .accordion-section {
-            margin: 1rem 0;
+            margin: 0.75rem 0;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            overflow: hidden;
             background-color: white;
         }
 
         .accordion-header {
             background-color: var(--bg-color);
-            padding: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 600;
             color: var(--text-color);
             transition: background-color 0.2s;
         }
 
         .accordion-header:hover {
-            background-color: #E5E7EB;
+            background-color: var(--primary-light);
+        }
+
+        .accordion-header.active {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
         }
 
         .accordion-content {
@@ -112,6 +113,10 @@
         /* Markdown içerik stilleri */
         .markdown-content {
             line-height: 1.6;
+            font-size: 0.9375rem;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
         }
 
         .markdown-content h3 {
@@ -147,6 +152,7 @@
             border-radius: 6px;
             overflow-x: auto;
             margin: 1rem 0;
+            -webkit-overflow-scrolling: touch;
         }
 
         .markdown-content blockquote {
@@ -154,6 +160,11 @@
             margin: 1rem 0;
             padding: 0.5rem 0 0.5rem 1rem;
             background-color: var(--bg-color);
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
         }
 
         #loading, #error {
@@ -168,6 +179,37 @@
 
         #error {
             color: #DC2626;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            .container {
+                padding: 0.75rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .back-button {
+                width: 100%;
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .accordion-header {
+                padding: 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            .accordion-content {
+                padding: 0.75rem;
+            }
         }
     </style>
 </head>

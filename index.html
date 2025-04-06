@@ -9,72 +9,78 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --success-color: #10b981;
-            --error-color: #ef4444;
-            --text-color: #1f2937;
-            --text-light: #6b7280;
-            --bg-color: #f9fafb;
-            --card-bg: #ffffff;
-            --border-color: #e5e7eb;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --primary-color: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --bg-color: #F9FAFB;
+            --text-color: #1F2937;
+            --text-light: #6B7280;
+            --border-color: #E5E7EB;
+            --error-color: #DC2626;
+            --success-color: #059669;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 1rem;
             background-color: var(--bg-color);
             color: var(--text-color);
-            line-height: 1.5;
-            min-height: 100vh;
-            padding: 2rem;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: var(--card-bg);
+            padding: 1rem;
+            background-color: white;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
+        /* Mobil için nav-links düzenlemesi */
         .nav-links {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
+            position: static;
             display: flex;
-            gap: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .nav-links {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                flex-direction: row;
+                gap: 1rem;
+                margin-bottom: 0;
+            }
+
+            body {
+                padding: 2rem;
+            }
         }
 
         .nav-link {
             display: inline-flex;
             align-items: center;
-            padding: 0.5rem 1rem;
+            justify-content: center;
+            padding: 0.75rem 1rem;
             background-color: var(--primary-color);
             color: white;
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-weight: 500;
             transition: background-color 0.2s;
+            text-align: center;
+            width: 100%;
         }
 
         .nav-link:hover {
-            background-color: #059669;
+            background-color: var(--primary-dark);
         }
 
-        h1 {
-            font-size: 1.875rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--text-color);
-        }
-
+        /* Form stilleri */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -86,44 +92,53 @@
             color: var(--text-color);
         }
 
-        input, textarea, select {
+        input[type="text"],
+        select,
+        textarea {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 1rem;
-            transition: all 0.2s ease;
-            background-color: var(--bg-color);
+            transition: border-color 0.2s;
+            box-sizing: border-box;
         }
 
-        input:focus, textarea:focus, select:focus {
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
 
-        button {
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.875rem;
             background-color: var(--primary-color);
             color: white;
-            padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 1rem;
             font-weight: 500;
-            transition: all 0.2s ease;
-            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        button:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-1px);
+        button[type="submit"]:hover {
+            background-color: var(--primary-dark);
         }
 
-        button:disabled {
+        button[type="submit"]:disabled {
             background-color: var(--text-light);
             cursor: not-allowed;
-            transform: none;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
         }
 
         .loading {
@@ -199,8 +214,7 @@
 <body>
     <div class="container">
         <div class="nav-links">
-            <a href="response.html" class="nav-link">Son Yanıtı Görüntüle</a>
-            <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
+                        <a href="plangor.html" class="nav-link">Ders Planlarını Görüntüle</a>
         </div>
         <h1>Ders Planı</h1>
         <form id="n8nForm">
@@ -241,7 +255,7 @@
         </form>
         <div id="loading" class="loading">
             <div class="loading-spinner"></div>
-            <div class="loading-text">Form gönderiliyor ve yanıt bekleniyor...</div>
+            <div class="loading-text">Ders Planı Oluşturuluyor ve yanıt bekleniyor...1 dakika içinde işlem tamamlanacaktır.</div>
         </div>
         <p id="successMessage" class="success-message">Form başarıyla gönderildi!</p>
         <p id="errorMessage" class="error-message">Bir hata oluştu. Lütfen tekrar deneyin.</p>
